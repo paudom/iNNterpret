@@ -1,12 +1,14 @@
 from __future__ import absolute_import
 
 # -- MESSAGE -- #
-print('Interpretability Toolbox')
+print('Interpretability Toolbox.')
 
 # -- IMPORT METHOD SUBPACKAGES -- #
-from . import visualization
-from . import gradient
-from . import relevance
+from . import attribution
+from . import datapoints
+from . import function
+from . import localization
+from . import signal
 
 # -- IMPORT UTILITIES SUBPACKAGE -- #
 from . import utils
@@ -15,4 +17,4 @@ from . import utils
 __version__ = '1.0.0'
 
 # -- ALL -- #
-__all__ = ['visualization','relevance','gradient','utils']
+__all__ = ['attribution','datapoints','function','localization','signal','utils']

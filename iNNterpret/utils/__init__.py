@@ -1,8 +1,9 @@
 from __future__ import absolute_import
 
 # -- IMPORT SUB UTILITIES-- #
+from . import tensor_utils
 from . import data_utils
-from . import io_utils
-from . import methods_utils
+from . import generic_utils
 
-# -- GLOBALLY IMPORTABLE UTILITIES -- #
+# -- ALL -- #
+__all__ = ['tensor_utils','data_utils','generic_utils']
