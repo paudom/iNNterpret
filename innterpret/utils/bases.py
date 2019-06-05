@@ -1,4 +1,8 @@
+# -- BASE UTILITIES -- #
+from __future__ import absolute_import
+
 # -- IMPORT -- #
+from colored import fg,bg,attr
 import math
 import numpy as np
 
@@ -28,5 +32,5 @@ class Metrics():
 	# >> JACCARD_DISTANCE: return jaccard distance between two arrays.
 	def jaccard_distance(self,x,y):
 		x = np.asarray(x, np.bool) 
-  		y = np.asarray(y, np.bool) 
-  		return np.double(np.bitwise_and(x, y).sum())/np.double(np.bitwise_or(x, y).sum())
+		y = np.asarray(y, np.bool) 
+		return np.double(np.bitwise_and(x, y).sum())/np.double(np.bitwise_or(x, y).sum())

@@ -1,19 +1,17 @@
+from __future__ import absolute_import
+
 # -- IMPORT -- #
 
-# -- BACKPROPAGATION METHOD -- #
-class Backprop():
-
+# -- GRADIENT METHOD -- #
+class Gradient():
 	def __init__(self):
 		raise NotImplementedError
 
 # -- SMOOTHGRAD METHOD -- #
 class SmoothGrad():
-
 	def __init__(self):
 		raise NotImplementedError
 
-# -- GUIDED BACKPROPAGATION -- #
-class GuidedBackProp():
-
+class IntegratedGrad():
 	def __init__(self):
 		raise NotImplementedError

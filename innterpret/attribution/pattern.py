@@ -1,20 +1,18 @@
-# -- IMPORT -- #
+from __future__ import absolute_import
+
+# -- IMPORT -- #
 
 # -- PATTERN -- #
 class Pattern():
-
 	def __init__(self):
 		raise NotImplementedError
 
-
 # -- PATTERN NET METHOD -- #
-class PatternNet():
-
+class PatternNet(Pattern):
 	def __init__(self):
 		raise NotImplementedError
 
 # -- PATTERN ATTRIBUTION METHOD -- #
-class PatternAttribution():
-
+class PatternAttribution(Pattern):
 	def __init__(self):
 		raise NotImplementedError

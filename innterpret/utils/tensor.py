@@ -1,6 +1,8 @@
 # -- TENSOR UTILITIES -- #
+from __future__ import absolute_import
 
 # -- IMPORTS -- #
+from .. import print_msg
 import keras.backend as K
 import numpy as np
 import keras
@@ -28,19 +30,22 @@ def load_model(h5file):
 	try:
 		model = keras.models.load_model(cwd+os.sep+h5file)
 	except Exception as e:
-		print('Error while trying to load model from '+h5file+'.')
-		print('Try to execute "iNNterpret.utils.tensor_utils.fix_layer0()" If your model has an "InputLayer".')
+		assert False, print_msg('Error while trying to load model from '+h5file+'.Try to execute '
+			'innterpret.utils.tensor_utils.fix_layer0()" If your model has an "InputLayer".',show=False,option='error')
 
 # >> DECODE_PREDICTIONS: returns a list with the top predictions. The numbers specify the resulting neuron.
 def decode_predictions(predictions,top=5):
 	return prediction.argsort()[0][-top:][::-1]
 
 # >> VGG_CLASSES: returns a list with all the name classes. Their index indicate the number class for the VGG models.
-def vgg_classes():
+def vgg_classes(idx=None):
 	pred = np.array([range(1000)[::-1]])
-    decoded = keras.applications.vgg16.decode_predictions(pred,top=1000)
-    result = [item[1] for item in decoded[0]]
-    return result
+	decoded = keras.applications.vgg16.decode_predictions(pred,top=1000)
+	result = [item[1] for item in decoded[0]]
+	if idx is None:
+		return result
+	else:
+		return result[idx]
 
 # >> FIX_LAYER0: Corrects an error when keras or tensorflow are loaded and have InputLayers. 
 def fix_layer0(h5file, inputShape, dtype):
@@ -92,6 +97,7 @@ def get_model_parameters(model):
 		layerOutputs.append(layer.output)
 		layerAct.append(layer.activation)
 		layerWeights.append(layer.get_weights)
+	return layerNames,layerWeights,layerOutputs,layerAct
 
 
 

@@ -1,20 +1,26 @@
 from __future__ import absolute_import
 
-# -- MESSAGE -- #
-print('Interpretability Toolbox.')
+# -- IMPORT PRINT_MSG -- #
+from .display import print_msg,set_colour,reset_colour
 
-# -- IMPORT METHOD SUBPACKAGES -- #
-from . import attribution
-from . import datapoints
-from . import function
-from . import localization
-from . import signal
+# -- MESSAGE -- #
+print_msg('Interpretability Toolbox.')
+set_colour()
 
 # -- IMPORT UTILITIES SUBPACKAGE -- #
 from . import utils
+
+# -- IMPORT METHOD SUBPACKAGES -- #
+from . import surrogate
+from . import function
+from . import signal
+from . import attribution
+from . import localization
+from . import datapoints
+reset_colour()
 
 # -- VERSION -- #
 __version__ = '1.0.0'
 
 # -- ALL -- #
-__all__ = ['attribution','datapoints','function','localization','signal','utils']
+__all__ = ['attribution','datapoints','function','localization','signal','surrogate','utils']
