@@ -86,10 +86,5 @@ def visualize_heatmap(image,heatmap,modelName,cmap,savePath):
     plt.subplot(122)
     plt.title(modelName)
     plt.axis('off')
-    plt.imshow(heatmap[0],interpolation='bilinear',cmap=cmap)
+    plt.imshow(heatmap,interpolation='bilinear',cmap=cmap)
     fig.savefig(savePath,dpi=250)
-
-
-
-
-	

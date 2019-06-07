@@ -85,11 +85,11 @@ class LRPModel():
 
 	# >> VISUALIZE: returns a graph with the results.
 	def visualize(self,savePath,cmap='plasma',option='sum'):
-		print_msg('Visualize LRP Result...')
+		print_msg('Visualize '+self.__class__.__name__+' Result...')
 		print_msg('--------------------------')
 		oneDim = reduce_channels(self.relevance.copy(),option=option)
 		heatMap = deprocess_image(oneDim.copy())
-		visualize_heatmap(self.rawData,heatMap,self.__class__.__name__,cmap,savePath)
+		visualize_heatmap(self.rawData,heatMap[0],self.__class__.__name__,cmap,savePath)
 		print_msg('========== DONE ==========\n')
 
 	# >> EXECUTE: returns the result of the LRP method

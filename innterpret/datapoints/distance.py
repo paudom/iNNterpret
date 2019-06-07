@@ -11,7 +11,7 @@ import os
 class DistRobust():
 	def __init__(self,model,classOneDir,classTwoDir):
 		print_msg(self.__class__.__name__+' Initializing')
-		print_msg('--------------------------\n')
+		print_msg('--------------------------')
 		self.model = model
 		imgFormat = input(print_msg('Select the extension of the images: ',show=False,option='input'))
 		if not os.path.isdir(classOneDir):
@@ -74,7 +74,7 @@ class SDEModel():
 	# >> EXECUTE: returns the result of the LRP method
 	def execute(self,fileName,metric,numK):
 		print_msg(self.__class__.__name__+' Analyzing')
-		print_msg('--------------------------\n')
+		print_msg('--------------------------')
 		distVector = []
 		if metric == 'minkowski':
 			pVal = int(input(print_msg('Select the P value for the Minkowski distance: ',show=False,option='input')))

@@ -11,7 +11,6 @@ import os
 
 # -- ACTIVATION VISUALIZATION METHOD -- #
 class ActivationVis():
-
 	def __init__(self,model,saveDir):
 		print_msg(self.__class__.__name__+' Initializing')
 		print_msg('--------------------------\n')
