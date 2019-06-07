@@ -18,11 +18,10 @@ def print_msg(message,show=True,option='text'):
 	else:
 		return msg
 
-
 # >> SET_COLOUR: sets the text colour
 def set_colour():
-	print('%s' % fg(75))
+	print('%s------------------' % fg(75))
 
 # >> RESET_COLOUR: resets the text colour
 def reset_colour():
-	print('%s' % attr(0))
+	print('------------------%s' % attr(0))

@@ -81,10 +81,10 @@ class GuidedGradCAM():
 		assert self.model.get_layer(self.layerName).__class__.__name__ == 'Conv2D'
 		self.numClasses = model.outputs[0].get_shape()[1]-1
 		if 'GuidedBackProp' not in ops._gradient_registry._registry:
-		@ops.RegisterGradient("GuidedBackProp")
-		def _GuidedBackProp(op, grad):
-			dtype = op.inputs[0].dtype
-			return grad * tf.cast(grad > 0., dtype) * tf.cast(op.inputs[0] > 0., dtype)
+			@ops.RegisterGradient("GuidedBackProp")
+			def _GuidedBackProp(op, grad):
+				dtype = op.inputs[0].dtype
+				return grad * tf.cast(grad > 0., dtype) * tf.cast(op.inputs[0] > 0., dtype)
 		g = tf.get_default_graph()
 		with g.gradient_override_map({'Relu':'GuidedBackProp'}):
 			layerList = [layer for layer in vgg16Model.layers[1:] if hasattr(layer, 'activation')]

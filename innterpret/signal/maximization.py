@@ -29,6 +29,7 @@ class ActMaximization():
 		grads = K.gradients(loss,self.imgInput)[0]
 		self.gradient = K.function([self.imgInput],[loss,grads])
 		self.imgData = np.random.normal(0,10,(1,self.size,self.size,3))
+		print_msg('========== DONE ==========\n')
 
 	# >> EXECUTE: returns the result of the GradCAM method
 	def execute(self,epochs,learnRate=12000,l2Decay=0.0,
@@ -38,25 +39,25 @@ class ActMaximization():
 		self.gifImg = []
 		self.gifImg.append(self.imgData[0].copy())
 		for k in range(epochs):
-        	lossVal,gradVal = self.gradient([self.imgData+momentum*velocity])
-        	velocity = momentum*velocity+learnRate*gradVal
-        	self.imgData += velocity
-    		if verbose:
-        		print_msg('Current loss value: '+str(lossVal),option='verbose')
-    		if earlyStop is not 0 and lossVal >= earlyStop:
-        		if verbose:
-        			print_msg('Early Stopping achieved on epoch: '+str(k),option='verbose')
-        		break
-    		self.imgData = np.clip(self.imgData,0,255).astype('float32')
-    		if k != epochs-1:
-        		if l2Decay > 0:
-            		self.imgData *= (1-l2Decay)
-        		if blurStd is not 0 and k % blurEvery == 0:
-            		self.imgData = gaussian_filter(self.imgData, sigma=[0, blurStd, blurStd, 0])
-        		if medFiltSize is not 0 and k % medFiltEvery == 0 :
-            		self.imgData = median_filter(self.imgData, size=(1, medFiltSize, medFiltSize, 1))
-    		self.gifImg.append(self.imgData[0].copy())
-    	img = deprocess_image(self.imgData[0])
+			lossVal,gradVal = self.gradient([self.imgData+momentum*velocity])
+			velocity = momentum*velocity+learnRate*gradVal
+			self.imgData += velocity
+			if verbose:
+				print_msg('Current loss value: '+str(lossVal),option='verbose')
+			if earlyStop is not 0 and lossVal >= earlyStop:
+				if verbose:
+					print_msg('Early Stopping achieved on epoch: '+str(k),option='verbose')
+				break
+			self.imgData = np.clip(self.imgData,0,255).astype('float32')
+			if k != epochs-1:
+				if l2Decay > 0:
+					self.imgData *= (1-l2Decay)
+				if blurStd is not 0 and k % blurEvery == 0:
+					self.imgData = gaussian_filter(self.imgData, sigma=[0, blurStd, blurStd, 0])
+				if medFiltSize is not 0 and k % medFiltEvery == 0 :
+					self.imgData = median_filter(self.imgData, size=(1, medFiltSize, medFiltSize, 1))
+			self.gifImg.append(self.imgData[0].copy())
+		img = deprocess_image(self.imgData[0])
 		self.actMax = img
 		print_msg('========== DONE ==========\n')
 		return self.actMax
@@ -77,40 +78,40 @@ class ActMaximization():
 		print_msg('--------------------------')
 		size = int(self.targetSize/2) 
 		with imageio.get_writer(savePath, mode='I') as writer:
-    		for im in self.gifImg:
-        		image = deprocess_image(im.copy())
-        		image = np.asarray(pilImage.fromarray(image).resize((size,size),pilImage.ANTIALIAS))
-        		writer.append_data(image)
-        print_msg('========== DONE ==========\n')
+			for im in self.gifImg:
+				image = deprocess_image(im.copy())
+				image = np.asarray(pilImage.fromarray(image).resize((size,size),pilImage.ANTIALIAS))
+				writer.append_data(image)
+		print_msg('========== DONE ==========\n')
 	
 	# >> PRODUCE_MOSAIC: produce a mosaic with an evolution of the convergency.
-    def produce_mosaic(self,samples,savePath):
-    	print_msg('Produce '+self.__class__.__name__+' mosaic...')
+	def produce_mosaic(self,samples,savePath):
+		print_msg('Produce '+self.__class__.__name__+' mosaic...')
 		print_msg('--------------------------')
-    	margin = 5
+		margin = 5
 		stop = False
 		size = int(self.targetSize/2) 
 		mosaic = []
 		for im in self.gifImg[0::samples]:
-    		image = deprocess_image(im.copy())
-    		mosaic.append(np.asarray(pilImage.fromarray(image).resize((size,size),pilImage.ANTIALIAS)))
+			image = deprocess_image(im.copy())
+			mosaic.append(np.asarray(pilImage.fromarray(image).resize((size,size),pilImage.ANTIALIAS)))
 		n = int(np.round(np.sqrt(len(mosaic))))
 		cols = size*n+(n-1)*margin
 		rows = size*n+(n-1)*margin
 		draw = np.zeros((cols,rows,3),dtype='uint8')
 		im = 0
 		for c in range(n):
-    		if not stop:
-        		for r in range(n):
-            		wM = (size+margin)*c
-            		hM = (size+margin)*r
-            		draw[wM:wM+size,hM:hM+size,:] = mosaic[im]
-            		im += 1
-            		if(im >= len(mosaic)):
-                		stop = True
-                		break
-    		else:
-        		break
+			if not stop:
+				for r in range(n):
+					wM = (size+margin)*c
+					hM = (size+margin)*r
+					draw[wM:wM+size,hM:hM+size,:] = mosaic[im]
+					im += 1
+					if(im >= len(mosaic)):
+						stop = True
+						break
+			else:
+				break
 		imgDraw = kerasImage.array_to_img(draw,scale=False)
 		imgDraw.save(savePath,dpi=(250,250))
 		print_msg('========== DONE ==========\n')
@@ -144,21 +145,21 @@ class FeatMaximization():
 		self.gifImg = []
 		self.gifImg.append(self.imgData[0].copy())
 		for up in reversed(range(self.upSteps)):
-    		for k in range(epochs):
-        		lossVal,gradVal = self.gradient([self.imgData])
-        		if lossVal <= K.epsilon():
-        			if verbose:
-            		print_msg('Gradient got stuck',option='verbose')
-            	break
-        	step = 1/(gradVal.std()+K.epsilon())
-        	self.imgData += gradVal*step
-        	gifImg.append(self.imgData[0].copy())
-        	if verbose:
-        		print_msg('Current loss value: '+str(lossVal),option='verbose')
-    		size = int(self.targetSize/(self.factor**up))
-    		img = deprocess_image(self.imgData[0],scale=0.25)
-    		img = np.asarray(pilImage.fromarray(img).resize((size,size),pilImage.BILINEAR),dtype='float32')
-    		self.imgData = [self.process_image(img,self.imgData[0])]
+			for k in range(epochs):
+				lossVal,gradVal = self.gradient([self.imgData])
+				if lossVal <= K.epsilon():
+					if verbose:
+						print_msg('Gradient got stuck',option='verbose')
+				break
+			step = 1/(gradVal.std()+K.epsilon())
+			self.imgData += gradVal*step
+			gifImg.append(self.imgData[0].copy())
+			if verbose:
+				print_msg('Current loss value: '+str(lossVal),option='verbose')
+			size = int(self.targetSize/(self.factor**up))
+			img = deprocess_image(self.imgData[0],scale=0.25)
+			img = np.asarray(pilImage.fromarray(img).resize((size,size),pilImage.BILINEAR),dtype='float32')
+			self.imgData = [self.process_image(img,self.imgData[0])]
 		img = deprocess_image(imgInputData[0])
 		self.actMax = img
 		print_msg('========== DONE ==========\n')
@@ -166,10 +167,10 @@ class FeatMaximization():
 
 	# >> PROCESS_IMAGE: ensures that the image is valid
 	def process_image(x,previous):
-    	x = x/255; x -= 0.5
-    	return x*4*previous.std()+previous.mean()
+		x = x/255; x -= 0.5
+		return x*4*previous.std()+previous.mean()
 
-   	# >> VISUALIZE: returns a graph with the results.
+	# >> VISUALIZE: returns a graph with the results.
 	def visualize(self,savePath):
 		print_msg('Visualize '+self.__class__.__name__+' Result...')
 		print_msg('--------------------------')
@@ -185,40 +186,40 @@ class FeatMaximization():
 		print_msg('--------------------------')
 		size = int(self.targetSize/2) 
 		with imageio.get_writer(savePath, mode='I') as writer:
-    		for im in self.gifImg:
-        		image = deprocess_image(im.copy())
-        		image = np.asarray(pilImage.fromarray(image).resize((size,size),pilImage.ANTIALIAS))
-        		writer.append_data(image)
-        print_msg('========== DONE ==========\n')
+			for im in self.gifImg:
+				image = deprocess_image(im.copy())
+				image = np.asarray(pilImage.fromarray(image).resize((size,size),pilImage.ANTIALIAS))
+				writer.append_data(image)
+		print_msg('========== DONE ==========\n')
 	
 	# >> PRODUCE_MOSAIC: produce a mosaic with an evolution of the convergency.
-    def produce_mosaic(self,samples,savePath):
-    	print_msg('Produce '+self.__class__.__name__+' mosaic...')
+	def produce_mosaic(self,samples,savePath):
+		print_msg('Produce '+self.__class__.__name__+' mosaic...')
 		print_msg('--------------------------')
-    	margin = 5
+		margin = 5
 		stop = False
 		size = int(self.targetSize/2) 
 		mosaic = []
 		for im in self.gifImg[0::samples]:
-    		image = deprocess_image(im.copy())
-    		mosaic.append(np.asarray(pilImage.fromarray(image).resize((size,size),pilImage.ANTIALIAS)))
+			image = deprocess_image(im.copy())
+			mosaic.append(np.asarray(pilImage.fromarray(image).resize((size,size),pilImage.ANTIALIAS)))
 		n = int(np.round(np.sqrt(len(mosaic))))
 		cols = size*n+(n-1)*margin
 		rows = size*n+(n-1)*margin
 		draw = np.zeros((cols,rows,3),dtype='uint8')
 		im = 0
 		for c in range(n):
-    		if not stop:
-        		for r in range(n):
-            		wM = (size+margin)*c
-            		hM = (size+margin)*r
-            		draw[wM:wM+size,hM:hM+size,:] = mosaic[im]
-            		im += 1
-            		if(im >= len(mosaic)):
-                		stop = True
-                		break
-    		else:
-        		break
+			if not stop:
+				for r in range(n):
+					wM = (size+margin)*c
+					hM = (size+margin)*r
+					draw[wM:wM+size,hM:hM+size,:] = mosaic[im]
+					im += 1
+					if(im >= len(mosaic)):
+						stop = True
+						break
+			else:
+				break
 		imgDraw = kerasImage.array_to_img(draw,scale=False)
 		imgDraw.save(savePath,dpi=(250,250))
 		print_msg('========== DONE ==========\n')

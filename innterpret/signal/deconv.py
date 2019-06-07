@@ -81,9 +81,8 @@ class Deconvolution():
 	def visualize(self,savePath):
 		print_msg('Visualize'+self.__class__.__name__+' Result...')
 		print_msg('--------------------------')
-		result = self.deconv - self.deconv.min()
-		result *= 1.0 / (self.deconv.max() + K.epsilon())
-		uint8Deconv = (self. * 255).astype(np.uint8)
+		result = (self.deconv-self.deconv.min())/(self.deconv.max()-self.deconv.min()+K.epsilon())
+		uint8Deconv = (result* 255).astype(np.uint8)
 		img = pilImage.fromarray(uint8Deconv, 'RGB')
 		visualize_heatmap(self.rawData,img,self.__class__.__name__,'viridis',savePath)
 		print_msg('========== DONE ==========\n')
@@ -95,10 +94,10 @@ class GuidedBackProp():
 		print_msg('--------------------------')
 		assert self.vgg16Model.get_layer(self.layerName).__class__.__name__ == 'Conv2D'
 		if 'GuidedBackProp' not in ops._gradient_registry._registry:
-		@ops.RegisterGradient("GuidedBackProp")
-		def _GuidedBackProp(op, grad):
-			dtype = op.inputs[0].dtype
-			return grad * tf.cast(grad > 0., dtype) * tf.cast(op.inputs[0] > 0., dtype)
+			@ops.RegisterGradient("GuidedBackProp")
+			def _GuidedBackProp(op, grad):
+				dtype = op.inputs[0].dtype
+				return grad * tf.cast(grad > 0., dtype) * tf.cast(op.inputs[0] > 0., dtype)
 		g = tf.get_default_graph()
 		with g.gradient_override_map({'Relu':'GuidedBackProp'}):
 			layerList = [layer for layer in vgg16Model.layers[1:] if hasattr(layer, 'activation')]

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 # -- IMPORT -- #
 from .. import print_msg
-from ..utils.tensor import model_remove_sofmax
+from ..utils.tensor import model_remove_softmax
 from ..utils.data import load_image, reduce_channels, deprocess_image, visualize_heatmap
 from tensorflow.python.ops import nn_ops, gen_nn_ops
 from keras.models import Model

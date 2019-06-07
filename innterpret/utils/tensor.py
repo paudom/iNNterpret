@@ -69,7 +69,7 @@ def vgg_remove_softmax(model):
 	return reluModel
 
 # >> MODEL_REMOVE_SOFTMAX: Change the softmax activation of the last layer from a model.
-def model_remove_sofmax(model):
+def model_remove_softmax(model):
 	assert model.layers[-1].activation.__name__ == keras.activations.softmax.__name__
 	outShape = model.outputs[0].shape[-1]
 	outName = model.layers[-1].name

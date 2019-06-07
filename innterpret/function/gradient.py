@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 # -- IMPORT -- #
 from .. import print_msg
-from ..utils.data import load_image, deprocess_image visualize_heatmap
+from ..utils.data import load_image, deprocess_image, visualize_heatmap
 import numpy as np
 import keras.backend as K
 from keras.preprocessing import image as kerasImage
@@ -13,17 +13,15 @@ class Gradient():
 	def __init__(self,model,layerName):
 		print_msg(self.__class__.__name__+' Initializing')
 		print_msg('--------------------------')
+		self.model = model
+		self.layerName = layerName
 		assert self.model.get_layer(self.layerName).__class__.__name__ == 'Conv2D'
-		try:
-			inputData = model.inputs[0]
-			outputLayer = model.get_layer(layerName)
-			loss = K.mean(outputLayer.output)
-			gradients = K.gradients(loss, inputData)[0]
-			self.gradient = K.function([inputData], [gradients])
-			self.model = model
-			print_msg('========== DONE ==========\n')
-		except ValueError as e:
-			assert False, print_msg('The specified layer does not exist in the model introduced',show=False,option='error')
+		inputData = self.model.inputs[0]
+		outputLayer = self.model.get_layer(self.layerName)
+		loss = K.mean(outputLayer.output)
+		gradients = K.gradients(loss, inputData)[0]
+		self.gradient = K.function([inputData], [gradients])
+		print_msg('========== DONE ==========\n')
 
 	# >> EXECUTE: returns the result of the GRADIENT method
 	def execute(self,fileName):
