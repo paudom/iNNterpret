@@ -11,7 +11,7 @@ class Metrics():
 
 	# >> EUCLIDEAN_DISTANCE: returns the euclidean distance between two arrays.
 	def euclidean_distance(self,x,y):
-		return np.sqrt(np.sum(np.pow(np.subtract(x,y),2)),axis=-1)
+		return np.sqrt(np.sum(np.power(np.subtract(x,y),2),axis=-1))
 
 	# >> MANHATTAN_DISTANCE: return manhattan distance between two arrays.
 	def manhattan_distance(self,x,y):
@@ -19,7 +19,7 @@ class Metrics():
 
 	# >> MINKOWSKI_DISTANCE: return minkowski distance between two arrays.	
 	def minkowski_distance(self,x,y,pVal):
-		return self.nth_root(np.sum(np.pow(np.abs(np.subtract(x-y)),pVal),axis=-1),pVal)
+		return self.nth_root(np.sum(np.power(np.abs(np.subtract(x-y)),pVal),axis=-1),pVal)
 
 	# >> NTH_ROOT: return the nth_root of a array.
 	def nth_root(self,value,nRoot):
@@ -27,7 +27,8 @@ class Metrics():
 
 	# >> COSINE_DISTANCE: return cosine distance between two arrays.	
 	def cosine_distance(self,x,y):
-		return np.dot(x, y)/(np.linalg.norm(x)*np.linalg.norm(y))
+		y = y.reshape(x.shape[1],x.shape[0])
+		return np.dot(x,y)/(np.linalg.norm(x)*np.linalg.norm(y))
 
 	# >> JACCARD_DISTANCE: return jaccard distance between two arrays.
 	def jaccard_distance(self,x,y):

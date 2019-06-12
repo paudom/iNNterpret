@@ -52,8 +52,7 @@ def load_image(imgPath, targetSize=(224,224), preprocess=True):
 
 # >> GET_IMAGE_LIST: Get a list with all image filename/s of a certain directory
 def get_image_list(dirPath,imgFormat,justOne=True):
-	cwd = os.getcwd()
-	fullPath = cwd+os.sep+dirPath+os.sep+'*.'+imgFormat
+	fullPath = dirPath+os.sep+'*.'+imgFormat
 	fileNames = glob(fullPath)
 	if justOne:
 		imgSel = random.randint(0, len(fileNames)-1)
