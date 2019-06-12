@@ -12,5 +12,3 @@ For the moment the product is in development.
 ## Acknowledgements
 The base of this project is presented here:
 - [iNNvestigate](https://github.com/albermax/innvestigate). "iNNvestigate neural networks!" by Maximilian Alber, Sebastian Lapuschkin, Philipp Seegerer, Miriam Hägele, Kristof T. Schütt, Grégoire Montavon, Wojciech Samek, Klaus-Robert Müller, Sven Dähne, Pieter-Jan Kindermans. [Paper](http://arxiv.org/abs/1808.04260)
-- [Activation Maximization](https://github.com/Evolving-AI-Lab/synthesizing). [Paper](https://arxiv.org/pdf/1605.09304.pdf)
-- [interpretTensor](https://github.com/VigneshSrinivasan10/interprettensor).
