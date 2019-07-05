@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
 # -- IMPORT -- #
-from .. import print_msg
-from ..utils.tensor import model_remove_softmax
+from ..utils.tensor import model_remove_softmax, get_model_parameters
 from ..utils.data import load_image, reduce_channels, deprocess_image, visualize_heatmap
 from tensorflow.python.ops import nn_ops, gen_nn_ops
 from keras.models import Model
@@ -14,25 +13,25 @@ import copy as cp
 # -- LRP METHOD -- #
 class LRPModel():
 	def __init__(self,model,verbose=True):
-		print_msg(self.__class__.__name__+' Initialization...')
-		print_msg('--------------------------')
+		self.verbose = verbose
+		print_msg(self.__class__.__name__+' Initialization...',verbose=self.verbose)
+		print_msg('--------------------------',verbose=self.verbose)
 		reluModel = model_remove_softmax(model)
 		_,_,activations,_ = get_model_parameters(model) 
 		self.model = Model(inputs=reluModel.input,outputs=activations)
-		if verbose:
+		if self.verbose:
 			self.model.summary()
-		self.optionRule = input(print_msg('(ZPlus)-(ZAlpha): ',show=False,option='input'))
+		self.optionRule = input(set_msg('(ZPlus)-(ZAlpha): '))
 		if self.optionRule == 'ZAlpha':
-			self.alpha = int(input(print_msg('Select a Value for Alpha: ',show=False,option='input')))
+			self.alpha = int(input(set_msg('Select a Value for Alpha: ')))
 			assert self.alpha >= 1
-		self.R = 0; self.outputR = 0; self.rules = 0
 		self.numLayers = len(self.model.layers)
-		print_msg('========== DONE ==========\n')
+		print_msg('========== DONE ==========\n',verbose=verbose)
 
 	# >> DEFINE_RULES: goes through the model to save the specified rules
-	def define_rules(self,imgData,oneHot=False,verbose=True):
-		print_msg('Define Rules...')
-		print_msg('--------------------------')       
+	def define_rules(self,imgData,oneHot=False):
+		print_msg('Define Rules...',verbose=verbose)
+		print_msg('--------------------------',verbose=verbose)       
 		layerRules = []; self.outputR = self.model.predict(imgData)
 		if oneHot:
 			neuron = np.argmax(self.outputR[-1])
@@ -48,40 +47,35 @@ class LRPModel():
 				layerRules.append(ZAlpha(currLayer,activation,self.alpha))
 			else:
 				assert False, 'This Rule Option is not supported'
-			if verbose:
-				print_msg('<><><><><>',option='verbose')
-				print_msg('Weights From: ['+currLayer.name+']',option='verbose')
-				print_msg('Activations From: ['+nextLayer.name+']',option='verbose')
+			print_msg('<><><><><>',verbose=verbose)
+			print_msg('Weights From: ['+currLayer.name+']',verbose=verbose)
+			print_msg('Activations From: ['+nextLayer.name+']',verbose=verbose)
 		self.rules = layerRules
-		print_msg('========== DONE ==========\n')
+		print_msg('========== DONE ==========\n',verbose=verbose)
 
 	# >> RUN_RULES: computes the relevance tensor for all the model layers.
-	def run_rules(self,verbose=True):
-		print_msg('Run Rules...')
-		print_msg('--------------------------')
+	def run_rules(self):
+		print_msg('Run Rules...',verbose=verbose)
+		print_msg('--------------------------',verbose=verbose)
 		R = {};
 		R[self.rules[0].name] = K.identity(self.outputR[-1])
-		if verbose:
-			shape = print_tensor_shape(R[self.rules[0].name])
-			print_msg('<><><><><>',option='verbose')
-			print_msg('Rule R['+self.rules[0].name+'] Correctly runned.',option='verbose')
-			print_msg('Tensor Output Shape: '+shape,option='verbose')
+		self.print_rule_information(R[self.rules[0].name],verbose=verbose)
 		for k in range(len(self.rules)):
 			if k != len(self.rules)-1:
 				R[self.rules[k+1].name] = self.rules[k].run(R[self.rules[k].name],ignoreBias=False)
-				if verbose:
-					shape = print_tensor_shape(R[self.rules[k+1].name])
-					print_msg('<><><><><>',option='verbose')
-					print_msg('Rule R['+self.rules[k+1].name+'] Correctly runned.',option='verbose')
-					print_msg('Tensor Output Shape: '+shape,option='verbose')
+				self.print_rule_information(R[self.rules[k+1].name],verbose=verbose)
 			else:
 				R['input'] = self.rules[k].run(R[self.rules[k].name],ignoreBias=False)
-				if verbose:
-					shape = print_tensor_shape(R['input'])
-					print_msg('<><><><><>',option='verbose')
-					print_msg('Rule R[input] Correctly runned.',option='verbose')
-					print_msg('Tensor Output Shape: '+shape,option='verbose')
-		print_msg('========== DONE ==========\n')
+				self.print_rule_information(R['input'],verbose=verbose)
+		print_msg('========== DONE ==========\n',verbose=verbose)
+
+	def print_rule_information(R):
+		""">> PRINT_RULE_INFORMATION: prints out the tensor shape of the rules runned."""
+		if verbose:
+			shape = print_tensor_shape(R)
+			print_msg('<><><><><>')
+			print_msg('Rule R[input] Correctly runned.')
+			print_msg('Tensor Output Shape: '+shape)
 
 	# >> VISUALIZE: returns a graph with the results.
 	def visualize(self,savePath,cmap='plasma',option='sum'):
@@ -90,10 +84,10 @@ class LRPModel():
 		oneDim = reduce_channels(self.relevance.copy(),option=option)
 		heatMap = deprocess_image(oneDim.copy())
 		visualize_heatmap(self.rawData,heatMap[0],self.__class__.__name__,cmap,savePath)
-		print_msg('========== DONE ==========\n')
+		print_msg('========== DONE ==========\n',verbose=verbose)
 
 	# >> EXECUTE: returns the result of the LRP method
-	def execute(self,fileName,sess,layerName=None,oneHot=False,verbose=False):
+	def execute(self,fileName,sess,layerName=None,oneHot=False):
 		print_msg(self.__class__.__name__+' Analyzing')
 		print_msg('--------------------------')
 		self.rawData = load_image(fileName,preprocess=False)
