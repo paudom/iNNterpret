@@ -10,7 +10,6 @@ import PIL.Image as pilImage
 import tensorflow as tf
 import keras.backend as K
 
-
 # -- DECONVOLUTION METHOD -- #
 class Deconvolution():
 	def __init__(self,model,layerName):

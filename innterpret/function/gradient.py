@@ -68,7 +68,7 @@ class SmoothGrad(Gradient):
 		self.heatMap = heatMap
 		print_msg('========== DONE ==========\n')
 		return self.heatMap
-
+		
 	# >> VISUALIZE: returns a graph with the results.
 	def visualize(self,savePath,cmap='bone'):
 		print_msg('Visualize '+self.__class__.__name__+' Result...')
