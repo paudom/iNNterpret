@@ -7,11 +7,11 @@ from colored import fg,attr
 class Verbose():
 	""">> CLASS:VERBOSE: responsible for displaying messages"""
 	def __init__(self,verbose=True):
-		self.verbose = verbose
+		self.flag = verbose
 
 	def print_msg(self,message):
 		""">> PRINT_MSG: prints a message in a certain colour"""
-		if self.verbose:
+		if self.flag:
 			print(self.set_msg(message))
 
 	def set_msg(self,message):
@@ -20,11 +20,19 @@ class Verbose():
 		return msg
 
 	@property
+	def switch_flag(self):
+		""">> SWITCH_FLAG: change the verbosity level of the Toolbox."""
+		if self.flag:
+			self.flag = False
+		else:
+			self.flag = True
+		
+	@property
 	def set_colour(self):
 		""">> SET_COLOUR: sets the text colour."""
-		print('%s------------------' % fg(75))
+		print('%s' % fg(75))
 	
 	@property
 	def reset_colour(self):
 		""">> RESET_COLOUR: resets the text colour."""
-		print('%s------------------%s' % (fg(75),attr(0)))
+		print('%s' % attr(0))

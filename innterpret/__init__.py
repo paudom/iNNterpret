@@ -3,13 +3,16 @@ from __future__ import absolute_import
 # -- IMPORT PRINT_MSG -- #
 from .display import Verbose
 
-# -- INITIALIZE VERBOSE -- #
+# -- INITIALIZE VERBOSE-- #
 __verbose__ = Verbose(True)
 __verbose__.set_colour
-__verbose__.print_msg('Interpretability Toolbox.')
+print('------------------')
+print('Interpretability Toolbox.')
+print('------------------')
+print('Importing Modules...')
 
 # -- IMPORT UTILITIES SUBPACKAGE -- #
-#from . import utils
+from . import utils
 
 # -- IMPORT METHOD SUBPACKAGES -- #
 #from . import surrogate
@@ -20,6 +23,7 @@ __verbose__.print_msg('Interpretability Toolbox.')
 #from . import distance
 
 # -- RESET COLOR -- #
+print('========== DONE ==========')
 __verbose__.reset_colour
 
 # -- VERSION -- #

@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 
 # -- IMPORT CLASS METHODS -- #
-from .relevance import LRPModel
-from .pattern import PatternNet, PatternAttribution
-from .baseline import DeepLIFT, SHAPVal
+from .lrp import LRPModel
+from .deeplift import DeepLIFT
+from .shapvalues import SHAPValues
+from .patternet import PatternNet
+from .patternattr import PatternAttribution
+
