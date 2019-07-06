@@ -1,43 +1,46 @@
 from __future__ import absolute_import
 
 # -- IMPORT -- #
-from .. import print_msg
+from .. import __verbose__ as vrb
 from ..utils.data import load_image
 from keras.models import Model
+import keras.backend as K
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 
-# -- ACTIVATION VISUALIZATION METHOD -- #
 class ActivationVis():
+	""">> CLASS: ACTIVATIONVIS: Method that allows you to get the activations from all layers.
+		Specialized for Convolution Networks."""
 	def __init__(self,model,saveDir):
-		print_msg(self.__class__.__name__+' Initializing')
-		print_msg('--------------------------\n')
-		if not os.path.isdir(saveDir):
-			assert False, print_msg(saveDir+'is not a directory.',show=False,option='error')
+		vrb.print_msg(self.__class__.__name__+' Initializing')
+		vrb.print_msg('--------------------------\n')
+		#if not os.path.isdir(saveDir):
+			#assert False, print_msg(saveDir+'is not a directory.',show=False,option='error')
 		self.saveDir = saveDir
 		layerOutputs = []; layerNames = []
 		for layer in model.layers:
 			if layer.__class__.__name__ == 'Conv2D':
 				layerNames.append(layer.name)
 				layerOutputs.append(layer.output)
-		if not layerOutputs:
-			assert False, print_msg('The model introduced do not have any Conv2D layer',show=False,option='error')
+		#if not layerOutputs:
+			#assert False, print_msg('The model introduced do not have any Conv2D layer',show=False,option='error')
 		self.model = Model(inputs=model.input,outputs=layerOutputs)
 		self.layerNames = layerNames
 		self.layerOutputs = layerOutputs
-		print_msg('========== DONE ==========\n')
+		vrb.print_msg('========== DONE ==========\n')
 
-	# >> EXECUTE: returns the result of the ActivationVis method
 	def execute(self,fileName,cols=32,getAll=True):
-		print_msg(self.__class__.__name__+' Analyzing')
-		print_msg('--------------------------')
+		""">> EXECUTE: returns the result of the method"""
+		vrb.print_msg(self.__class__.__name__+' Analyzing')
+		vrb.print_msg('--------------------------')
 		imgData = load_image(fileName)
 		outputs = self.model.predict(imgData)
 		if getAll:
 			for n,act in zip(range(len(outputs)),outputs):
-				numFilters = act.shape[-1]; size = act.shape[1]
+				numFilters = act.shape[-1]
 				rows = numFilters // cols
 				fig = plt.figure(figsize=(cols,rows))
 				for k in range(0,cols*rows):
@@ -50,12 +53,13 @@ class ActivationVis():
 				fig.savefig(fileName,dpi=250)
 		else:
 			for k in self.layerNames:
-				print_msg(layerNames[k]+str(k),option='verbose')
-			layer = int(input(print_msg('Select a layer, from (0-%s): ' % str(len(self.layerNames)),show=False,option='input')))
-			fmap = int(input(print_msg('Select desired feature map, from (0-%s): ' % str(self.layerOutputs[layer].shape[3]-1),show=False,option='input')))
+				vrb.print_msg(self.layerNames[k]+str(k))
+			layer = int(input(vrb.set_msg('Select a layer, from (0-%s): ' % str(len(self.layerNames)))))
+			featureMap = int(input(vrb.set_msg('Select desired feature map, from (0-%s): ' \
+				 % str(self.layerOutputs[layer].shape[3]-1))))
 			fig = plt.figure(figsize=(6,4))
-			plt.imshow(outputs[layer][0,:,:,fmap],cmap='gray')
+			plt.imshow(outputs[layer][0,:,:,featureMap],cmap='gray')
 			plt.xticks([]); plt.yticks([])
-			fileName = self.saveDir+os.sep+self.layerNames[layer]+'_'+str(fmap)+'.png'
+			fileName = self.saveDir+os.sep+self.layerNames[layer]+'_'+str(featureMap)+'.png'
 			fig.savefig(fileName,dpi=250)
-		print_msg('========== DONE ==========\n')
+		vrb.print_msg('========== DONE ==========\n')
