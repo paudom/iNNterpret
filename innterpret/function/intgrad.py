@@ -16,7 +16,7 @@ class IntegratedGrad(Gradient):
 		super().__init__(model, layerName)
 
 	def execute(self,fileName,samples=50):
-		""">> EXECUTE: returns the result of the method"""
+		""">> EXECUTE: returns the result of the method."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		self.rawData = load_image(fileName,preprocess=False)

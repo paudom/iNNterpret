@@ -7,8 +7,8 @@ import keras.backend as K
 import numpy as np
 import math
 
-# -- DCONV2D LAYER -- #
 class DConv2D(object):
+	""">> CLASS:DCONV2D: Deconvolution Convolution 2D layer."""
 	def __init__(self, layer):
 		self.layer = layer
 		# -- UP FUNCTION -- #
@@ -33,21 +33,23 @@ class DConv2D(object):
 		downOutput = Conv2D(downFilters,(downRow,downCol),kernel_initializer=tf.constant_initializer(W),
 								   bias_initializer=tf.constant_initializer(b),padding='same')(downInput)
 		self.down_function = K.function([downInput, K.learning_phase()],[downOutput])
-	# -- FORWARD PASS -- #
+
 	def up(self, data, learn = 0):
+		""">> UP: Forward Pass."""
 		self.upData = self.up_function([data, learn])
 		self.upData = np.squeeze(self.upData,axis=0)
 		self.upData = np.expand_dims(self.upData,axis=0)
 		return self.upData
-	# -- BACKWARD PASS -- #
+
 	def down(self, data, learn = 0):
+		""">> DOWN: Backward Pass."""
 		self.downData = self.down_function([data, learn])
 		self.downData = np.squeeze(self.downData,axis=0)
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
 
-# -- DACTIVATION LAYER -- #
 class DActivation(object):
+	""">> CLASS:DACTIVATION: Deconvolution Activation layer."""
 	def __init__(self, layer, linear = False):
 		self.layer = layer
 		self.linear = linear
@@ -56,47 +58,49 @@ class DActivation(object):
 		deconvOutput = self.activation(deconvInput)
 		self.up_function = K.function([deconvInput, K.learning_phase()],[deconvOutput])
 		self.down_function = K.function([deconvInput, K.learning_phase()],[deconvOutput])
-	# -- FORWARD PASS -- #
-	def up(self, data, learn = 0):   
+
+	def up(self, data, learn = 0): 
+		""">> UP: Forward Pass.""" 
 		self.upData = self.up_function([data, learn])
 		self.upData = np.squeeze(self.upData,axis=0)
 		self.upData = np.expand_dims(self.upData,axis=0)
 		return self.upData
-	# -- BACKWARD PASS -- #
+
 	def down(self, data, learn = 0):
+		""">> DOWN: Backward Pass."""
 		self.downData = self.down_function([data, learn])
 		self.downData = np.squeeze(self.downData,axis=0)
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
 
-# -- DINPUT LAYER -- #
 class DInput(object):
+	""">> CLASS:DINPUT: Deconvolution Input layer."""
 	def __init__(self, layer):
 		self.layer = layer
-	# -- FORWARD PASS -- #
+
 	def up(self, data, learn = 0):
+		""">> UP: Forward Pass."""
 		self.upData = data
 		return self.upData
-	# -- BACKWARD PASS -- #
+
 	def down(self, data, learn = 0):
+		""">> DOWN: Backward Pass."""
 		data = np.expand_dims(data,axis=0)
 		self.downData = data
 		return self.downData
 
-# -- DDENSE LAYER -- #
 class DDense(object):
+	""">> CLASS:DDENSE: Deconvolution Input layer."""
 	def __init__(self, layer):
 		self.layer = layer
 		weights = layer.get_weights()
 		W = weights[0]
 		b = weights[1]
-		
 		# -- UP FUNCTION -- #
 		deconvInput = Input(shape = layer.input_shape[1:])
 		deconvOutput = Dense(layer.output_shape[1],kernel_initializer=tf.constant_initializer(W),
 							 bias_initializer=tf.constant_initializer(b))(deconvInput)
 		self.up_function = K.function([deconvInput, K.learning_phase()], [deconvOutput])
-		
 		# -- DOWN FUNCTION -- #
 		W = W.transpose()
 		self.inputShape = layer.input_shape
@@ -106,43 +110,48 @@ class DDense(object):
 		deconvOutput = Dense(self.input_shape[1:],kernel_initializer=tf.constant_initializer(W),
 							 bias_initializer=tf.constant_initializer(b))(deconvInput)
 		self.down_function = K.function([deconvInput, K.learning_phase()], [deconvOutput])
-	# -- FORWARD PASS -- #
+
 	def up(self, data, learn = 0):
+		""">> UP: Forward Pass."""
 		self.upData = self.up_function([data, learn])
 		self.upData = np.squeeze(self.upData,axis=0)
 		self.upData = np.expand_dims(self.upData,axis=0)
 		return self.upData
-	# -- BACKWARD PASS -- #
+
 	def down(self, data, learn = 0):
-		self.downData = self.down_func([data, learn])
+		""">> DOWN: Backward Pass."""
+		self.downData = self.down_function([data, learn])
 		self.downData = np.squeeze(self.downData,axis=0)
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
 
-# -- DFLATTEN LAYER -- #
 class DFlatten(object):
+	""">> CLASS:DFLATTEN: Deconvolution Flatten layer."""
 	def __init__(self, layer):
 		self.layer = layer
 		self.shape = layer.input_shape[1:]
 		self.up_function = K.function([layer.input, K.learning_phase()], [layer.output])
-	# -- FORWARD PASS -- #
+
 	def up(self, data, learn = 0):
-		self.upData = self.up_func([data, learn])
+		""">> UP: Forward Pass."""
+		self.upData = self.up_function([data, learn])
 		self.upData = np.squeeze(self.upData,axis=0)
 		self.upData = np.expand_dims(self.upData,axis=0)
 		return self.upData
-	# -- BACKWARD PASS -- #
+
 	def down(self, data, learn = 0):
+		""">> DOWN: Backward Pass."""
 		newShape = [data.shape[0]] + list(self.shape)
 		assert np.prod(self.shape) == np.prod(data.shape[1:])
 		self.downData = np.reshape(data, newShape)
 
-# -- DBATCH LAYER -- #
 class DBatch(object):
+	""">> CLASS:DBATCH: Deconvolution Batch layer."""
 	def __init__(self,layer):
 		self.layer = layer
-	# -- FORWARD PASS -- #
+
 	def up(self,data,learn=0):
+		""">> UP: Forward Pass."""
 		self.mean = data.mean()
 		self.std = data.std()
 		self.upData = data
@@ -151,31 +160,34 @@ class DBatch(object):
 		self.upData = np.squeeze(self.upData,axis=0)
 		self.upData = np.expand_dims(self.upData,axis=0)
 		return self.upData
-	# -- BACKWARD PASS -- #
+
 	def down(self,data,learn=0):
+		""">> DOWN: Backward Pass."""
 		self.downData = data
 		self.downData += self.mean
 		self.downData *= self.std
 		self.downData = np.squeeze(self.downData,axis=0)
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
-		return self.downData
 
-# -- DPOOLING LAYER -- #
 class DPooling(object):
+	""">> CLASS:DPOOLING: Deconvolution Pooling layer."""
 	def __init__(self, layer):
 		self.layer = layer
 		self.poolsize = layer.pool_size
-	# -- FORWARD PASS -- #
+
 	def up(self, data, learn = 0):
+		""">> UP: Forward Pass."""
 		[self.upData, self.switch] = self.__max_pooling_with_switch(data, self.poolsize)
 		return self.upData
-	# -- BACKWARD PASS -- #
+
 	def down(self, data, learn = 0):
+		""">> DOWN: Backward Pass."""
 		self.downData = self.__max_unpooling_with_switch(data, self.switch)
 		return self.downData
-	# -- POOLING -- #
+
 	def __max_pooling_with_switch(self, data, poolsize):
+		""">> __MAX_POOLING_WITH_SWITCH: Computes pooling with the recolected switches."""
 		switch = np.zeros(data.shape)
 		outShape = list(data.shape)
 		rowPool = int(poolsize[0])
@@ -201,8 +213,9 @@ class DPooling(object):
 							   col * colPool + maxCol,
 							   dim]  = 1
 		return [pooled, switch]
-	# -- UNPOOLING -- #
+
 	def __max_unpooling_with_switch(self, data, switch):
+		""">> __MAX_UNPOOLING_WITH_SWITCH: Reconstructs the sampling with the recolected switches."""
 		tile = np.ones((math.floor(switch.shape[1]/data.shape[1]),math.floor(switch.shape[2]/data.shape[2])))
 		tile = np.expand_dims(tile,axis=3)
 		data = np.squeeze(data,axis=0)
