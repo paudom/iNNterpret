@@ -1,23 +1,28 @@
 from __future__ import absolute_import
 
 # --  IMPORT -- #
+from ..interfaces import DeconvLayer
 from keras.layers import Input, InputLayer, Dense, Conv2D, MaxPooling2D, Flatten, Activation
 import tensorflow as tf
 import keras.backend as K
 import numpy as np
 import math
 
-class DConv2D(object):
-	""">> CLASS:DCONV2D: Deconvolution Convolution 2D layer."""
+class DConv2D(DeconvLayer):
+	"""CLASS::DConv2D:
+		---
+		Description:
+		---
+		>Deconvolution Convolution 2D layer.
+		Arguments:
+		---
+		>- layer: layer object that will be recreated for a deconv layer."""
 	def __init__(self, layer):
 		self.layer = layer
 		# -- UP FUNCTION -- #
 		weights = layer.get_weights()
-		W = weights[0]
-		b = weights[1]
-		upFilters = W.shape[3]
-		upRow = W.shape[0]
-		upCol = W.shape[1]
+		W,b = weights
+		upRow,upCol,_,upFilters = W.shape
 		upInput = Input(shape = layer.input_shape[1:])
 		upOutput = Conv2D(upFilters,(upRow,upCol),kernel_initializer=tf.constant_initializer(W),
 								   bias_initializer=tf.constant_initializer(b),padding='same')(upInput)
@@ -25,9 +30,7 @@ class DConv2D(object):
 		# -- DOWN FUNCTION -- #
 		W = np.transpose(W,(0,1,3,2))
 		W = W[::-1, ::-1,:,:]
-		downFilters = W.shape[3]
-		downRow = W.shape[0]
-		downCol = W.shape[1]
+		downRow,downCol,_,downFilters = W.shape
 		b = np.zeros(downFilters)
 		downInput = Input(shape = layer.output_shape[1:])
 		downOutput = Conv2D(downFilters,(downRow,downCol),kernel_initializer=tf.constant_initializer(W),
@@ -35,24 +38,45 @@ class DConv2D(object):
 		self.down_function = K.function([downInput, K.learning_phase()],[downOutput])
 
 	def up(self, data, learn = 0):
-		""">> UP: Forward Pass."""
+		"""METHOD::UP: Forward Pass.
+			---
+			Arguments:
+			---
+			>- data {tensor} -- data recollected from the previous layer.
+			>- learn {int} -- flag to determine if training is needed (default: {0})
+			Returns: 
+			---
+			>- {tensor} -- The data collected, the switches."""
 		self.upData = self.up_function([data, learn])
 		self.upData = np.squeeze(self.upData,axis=0)
 		self.upData = np.expand_dims(self.upData,axis=0)
 		return self.upData
 
 	def down(self, data, learn = 0):
-		""">> DOWN: Backward Pass."""
+		"""METHOD::DOWN: Backward Pass.
+			---
+			Arguments:
+			---
+			>- data: data recollected from the previous layer.
+			>- learn: flag to determine if training is needed (default: {0})
+			Returns:
+			>- {tensor} -- The reconstructed data."""
 		self.downData = self.down_function([data, learn])
 		self.downData = np.squeeze(self.downData,axis=0)
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
 
-class DActivation(object):
-	""">> CLASS:DACTIVATION: Deconvolution Activation layer."""
-	def __init__(self, layer, linear = False):
+class DActivation(DeconvLayer):
+	"""CLASS::DActivation:
+		---
+		Description:
+		---
+		>Deconvolution Activation layer.
+		Arguments:
+		---
+		>- layer: layer object that will be recreated for a deconv layer."""
+	def __init__(self, layer):
 		self.layer = layer
-		self.linear = linear
 		self.activation = layer.activation
 		deconvInput = K.placeholder(shape = layer.output_shape)
 		deconvOutput = self.activation(deconvInput)
@@ -60,42 +84,85 @@ class DActivation(object):
 		self.down_function = K.function([deconvInput, K.learning_phase()],[deconvOutput])
 
 	def up(self, data, learn = 0): 
-		""">> UP: Forward Pass.""" 
+		"""METHOD::UP: Forward Pass.
+			---
+			Arguments:
+			---
+			>- data {tensor} -- data recollected from the previous layer.
+			>- learn {int} -- flag to determine if training is needed (default: {0})
+			Returns: 
+			---
+			>- {tensor} -- The data collected, the switches.""" 
 		self.upData = self.up_function([data, learn])
 		self.upData = np.squeeze(self.upData,axis=0)
 		self.upData = np.expand_dims(self.upData,axis=0)
 		return self.upData
 
 	def down(self, data, learn = 0):
-		""">> DOWN: Backward Pass."""
+		"""METHOD::DOWN: Backward Pass.
+			---
+			Arguments:
+			---
+			>- data: data recollected from the previous layer.
+			>- learn: flag to determine if training is needed (default: {0})
+			Returns:
+			>- {tensor} -- The reconstructed data."""
 		self.downData = self.down_function([data, learn])
 		self.downData = np.squeeze(self.downData,axis=0)
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
 
-class DInput(object):
-	""">> CLASS:DINPUT: Deconvolution Input layer."""
+class DInput(DeconvLayer):
+	"""CLASS::DInput:
+		---
+		Description:
+		---
+		>Deconvolution Input layer.
+		Arguments:
+		---
+		>- layer: layer object that will be recreated for a deconv layer."""
 	def __init__(self, layer):
 		self.layer = layer
 
 	def up(self, data, learn = 0):
-		""">> UP: Forward Pass."""
+		"""METHOD::UP: Forward Pass.
+			---
+			Arguments:
+			---
+			>- data {tensor} -- data recollected from the previous layer.
+			>- learn {int} -- flag to determine if training is needed (default: {0})
+			Returns: 
+			---
+			>- {tensor} -- The data collected, the switches."""
 		self.upData = data
 		return self.upData
 
 	def down(self, data, learn = 0):
-		""">> DOWN: Backward Pass."""
+		"""METHOD::DOWN: Backward Pass.
+			---
+			Arguments:
+			---
+			>- data: data recollected from the previous layer.
+			>- learn: flag to determine if training is needed (default: {0})
+			Returns:
+			>- {tensor} -- The reconstructed data."""
 		data = np.expand_dims(data,axis=0)
 		self.downData = data
 		return self.downData
 
-class DDense(object):
-	""">> CLASS:DDENSE: Deconvolution Input layer."""
+class DDense(DeconvLayer):
+	"""CLASS::DDense: 
+		---
+		Description:
+		---
+		>Deconvolution Dense layer.
+		Arguments:
+		---
+		>- layer: layer object that will be recreated for a deconv layer."""
 	def __init__(self, layer):
 		self.layer = layer
 		weights = layer.get_weights()
-		W = weights[0]
-		b = weights[1]
+		W, b = weights
 		# -- UP FUNCTION -- #
 		deconvInput = Input(shape = layer.input_shape[1:])
 		deconvOutput = Dense(layer.output_shape[1],kernel_initializer=tf.constant_initializer(W),
@@ -103,55 +170,105 @@ class DDense(object):
 		self.up_function = K.function([deconvInput, K.learning_phase()], [deconvOutput])
 		# -- DOWN FUNCTION -- #
 		W = W.transpose()
-		self.inputShape = layer.input_shape
-		self.outputShape = layer.output_shape
-		b = np.zeros(self.inputShape[1])
-		deconvInput = Input(shape = self.outputShape[1:])
-		deconvOutput = Dense(self.input_shape[1:],kernel_initializer=tf.constant_initializer(W),
+		b = np.zeros(layer.input_shape[1])
+		deconvInput = Input(shape = layer.output_shape[1:])
+		deconvOutput = Dense(layer.input_shape[1:],kernel_initializer=tf.constant_initializer(W),
 							 bias_initializer=tf.constant_initializer(b))(deconvInput)
 		self.down_function = K.function([deconvInput, K.learning_phase()], [deconvOutput])
 
 	def up(self, data, learn = 0):
-		""">> UP: Forward Pass."""
+		"""METHOD::UP: Forward Pass.
+			---
+			Arguments:
+			---
+			>- data {tensor} -- data recollected from the previous layer.
+			>- learn {int} -- flag to determine if training is needed (default: {0})
+			Returns: 
+			---
+			>- {tensor} -- The data collected, the switches."""
 		self.upData = self.up_function([data, learn])
 		self.upData = np.squeeze(self.upData,axis=0)
 		self.upData = np.expand_dims(self.upData,axis=0)
 		return self.upData
 
 	def down(self, data, learn = 0):
-		""">> DOWN: Backward Pass."""
+		"""METHOD::DOWN: Backward Pass.
+			---
+			Arguments:
+			---
+			>- data: data recollected from the previous layer.
+			>- learn: flag to determine if training is needed (default: {0})
+			Returns:
+			>- {tensor} -- The reconstructed data."""
 		self.downData = self.down_function([data, learn])
 		self.downData = np.squeeze(self.downData,axis=0)
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
 
-class DFlatten(object):
-	""">> CLASS:DFLATTEN: Deconvolution Flatten layer."""
+class DFlatten(DeconvLayer):
+	"""CLASS::DFlatten:
+		---
+		Description:
+		---
+		>Deconvolution Flatten layer.
+		Arguments:
+		---
+		>- layer: layer object that will be recreated for a deconv layer."""
 	def __init__(self, layer):
 		self.layer = layer
 		self.shape = layer.input_shape[1:]
 		self.up_function = K.function([layer.input, K.learning_phase()], [layer.output])
 
-	def up(self, data, learn = 0):
-		""">> UP: Forward Pass."""
+	def up(self,data,learn = 0):
+		"""METHOD::UP: Forward Pass.
+			---
+			Arguments:
+			---
+			>- data {tensor} -- data recollected from the previous layer.
+			>- learn {int} -- flag to determine if training is needed (default: {0})
+			Returns: 
+			---
+			>- {tensor} -- The data collected, the switches."""
 		self.upData = self.up_function([data, learn])
 		self.upData = np.squeeze(self.upData,axis=0)
 		self.upData = np.expand_dims(self.upData,axis=0)
 		return self.upData
 
 	def down(self, data, learn = 0):
-		""">> DOWN: Backward Pass."""
+		"""METHOD::DOWN: Backward Pass.
+			---
+			Arguments:
+			---
+			>- data: data recollected from the previous layer.
+			>- learn: flag to determine if training is needed (default: {0})
+			Returns:
+			>- {tensor} -- The reconstructed data."""
 		newShape = [data.shape[0]] + list(self.shape)
-		assert np.prod(self.shape) == np.prod(data.shape[1:])
+		#assert np.prod(self.shape) == np.prod(data.shape[1:])
 		self.downData = np.reshape(data, newShape)
 
-class DBatch(object):
-	""">> CLASS:DBATCH: Deconvolution Batch layer."""
+class DBatch(DeconvLayer):
+	"""CLASS::DBatch: 
+		---
+		Description:
+		---
+		>Deconvolution Batch layer.
+		Arguments:
+		---
+		>- layer: layer object that will be recreated for a deconv layer."""
 	def __init__(self,layer):
 		self.layer = layer
 
 	def up(self,data,learn=0):
-		""">> UP: Forward Pass."""
+		"""METHOD::UP: Forward Pass.
+			---
+			Arguments:
+			---
+			>- data {tensor} -- data recollected from the previous layer.
+			>- learn {int} -- flag to determine if training is needed (default: {0})
+			Returns: 
+			---
+			>- {tensor} -- The data collected, the switches."""
 		self.mean = data.mean()
 		self.std = data.std()
 		self.upData = data
@@ -162,7 +279,14 @@ class DBatch(object):
 		return self.upData
 
 	def down(self,data,learn=0):
-		""">> DOWN: Backward Pass."""
+		"""METHOD::DOWN: Backward Pass.
+			---
+			Arguments:
+			---
+			>- data: data recollected from the previous layer.
+			>- learn: flag to determine if training is needed (default: {0})
+			Returns:
+			>- {tensor} -- The reconstructed data."""
 		self.downData = data
 		self.downData += self.mean
 		self.downData *= self.std
@@ -170,24 +294,53 @@ class DBatch(object):
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
 
-class DPooling(object):
-	""">> CLASS:DPOOLING: Deconvolution Pooling layer."""
+class DPooling(DeconvLayer):
+	"""CLASS::DPooling:
+		---
+		Description:
+		---
+		>Deconvolution Pooling layer.
+		Arguments:
+		---
+		>- layer: layer object that will be recreated for a deconv layer."""
 	def __init__(self, layer):
 		self.layer = layer
 		self.poolsize = layer.pool_size
 
 	def up(self, data, learn = 0):
-		""">> UP: Forward Pass."""
+		"""METHOD::UP: Forward Pass.
+			---
+			Arguments:
+			---
+			>- data {tensor} -- data recollected from the previous layer.
+			>- learn {int} -- flag to determine if training is needed (default: {0})
+			Returns: 
+			---
+			>- {tensor} -- The data collected, the switches."""
 		[self.upData, self.switch] = self.__max_pooling_with_switch(data, self.poolsize)
 		return self.upData
 
 	def down(self, data, learn = 0):
-		""">> DOWN: Backward Pass."""
+		"""METHOD::DOWN: Backward Pass.
+			---
+			Arguments:
+			---
+			>- data: data recollected from the previous layer.
+			>- learn: flag to determine if training is needed (default: {0})
+			Returns:
+			>- {tensor} -- The reconstructed data."""
 		self.downData = self.__max_unpooling_with_switch(data, self.switch)
 		return self.downData
 
 	def __max_pooling_with_switch(self, data, poolsize):
-		""">> __MAX_POOLING_WITH_SWITCH: Computes pooling with the recolected switches."""
+		"""METHOD::__MAX_POOLING_WITH_SWITCH: Computes pooling with the recolected switches.
+			---
+			Arguments:
+			---
+			>- data {tensor} -- the data needed to pool.
+			>- poolsize {tuple} -- the pool size specified.
+			Returns:
+			>- {list} -- A list containing pooled values and the switches."""
 		switch = np.zeros(data.shape)
 		outShape = list(data.shape)
 		rowPool = int(poolsize[0])
@@ -215,7 +368,15 @@ class DPooling(object):
 		return [pooled, switch]
 
 	def __max_unpooling_with_switch(self, data, switch):
-		""">> __MAX_UNPOOLING_WITH_SWITCH: Reconstructs the sampling with the recolected switches."""
+		"""METHOD::__MAX_UNPOOLING_WITH_SWITCH: Reconstructs the sampling with the recolected switches.
+			---
+			Arguments:
+			---
+			>- data {tensor} -- data needed to unpool.
+			>- switch {tensor} -- switches captured.
+			Returns:
+			---
+			>- {tensor} -- the unpooled information."""
 		tile = np.ones((math.floor(switch.shape[1]/data.shape[1]),math.floor(switch.shape[2]/data.shape[2])))
 		tile = np.expand_dims(tile,axis=3)
 		data = np.squeeze(data,axis=0)

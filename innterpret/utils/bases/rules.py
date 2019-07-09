@@ -1,14 +1,23 @@
 from __future__ import absolute_import
 
 # -- IMPORT -- #
+from ..interfaces import Rule
 from tensorflow.python.ops import nn_ops, gen_nn_ops
 import keras.backend as K
 import tensorflow as tf
 import copy as cp
 import numpy as np
 
-class ZPlus(object):
-	""">> CLASS:ZPLUS: Rule to compute the relevance propagation."""
+class ZPlus(Rule):
+	"""CLASS::ZPlus:
+		---
+		Description:
+		---
+		>Rule to compute the relevance propagation.
+		Arguments:
+		---
+		>- currLayer {tensor} -- layer object of the current layer.
+		>- nextAct {tensor} -- activations from the previous layer."""
 	def __init__(self,currLayer,nextAct):
 		self.layer = currLayer
 		self.name = currLayer.name
@@ -18,7 +27,18 @@ class ZPlus(object):
 		self.minValue = -K.epsilon()
 		
 	def run(self,R,ignoreBias=False):
-		""">> RUN: run the relevance propagation for the current layer."""
+		"""METHOD::RUN:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.
+			>- ignoreBias {bool} -- flag to add the biases or ignore them (default: {False}).
+			Returns:
+			---
+			>- {tensor} -- The relevance from the current layer.
+			Raises:
+			---
+			"""
 		if self.type == 'Dense':
 			return self.run_dense(R,ignoreBias)
 		elif self.type == 'MaxPooling2D':
@@ -27,11 +47,19 @@ class ZPlus(object):
 			return self.run_conv(R,ignoreBias)
 		elif self.type == 'Flatten':
 			return self.run_flatten(R)
-		else:
-			raise NotImplementedError
+		#else:
+		#	raise NotImplementedError
 			
 	def run_dense(self,R,ignoreBias=False):
-		""">> RUN_DENSE: Run the relevance propagation for dense layers."""
+		"""METHOD::RUN_DENSE:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.
+			>- ignoreBias {bool} -- flag to add the biases or ignore them (default: {False})
+			Returns:
+			---
+			>The relevance of a dense layer."""
 		weights = self.layer.get_weights()
 		self.W = K.maximum(weights[0],0.)
 		self.B = K.maximum(weights[1],0.)
@@ -43,13 +71,27 @@ class ZPlus(object):
 		return K.clip(self.act*C,self.minValue,self.maxValue)
 	
 	def run_flatten(self,R):
-		""">> RUN_FLATTEN: Run the relevance propagation for flatten layers."""
+		"""METHOD::RUN_FLATTEN:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.
+			Returns: 
+			---
+			>- The relevance of a flatten layer."""
 		shape = self.act.get_shape().as_list()
 		shape[0] = -1
 		return K.reshape(R, shape)
 	
 	def run_pool(self,R):
-		""">> RUN_POOL: Run the relevance propagation for pool layers."""
+		"""METHOD:RUN_POOL:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.
+			Returns: 
+			---
+			>- The relevance of a pooling layer."""
 		poolSize = (1,self.layer.pool_size[0],self.layer.pool_size[1],1)
 		strdSize = (1,self.layer.strides[0],self.layer.strides[1],1)
 		pooled = tf.nn.max_pool(self.act, 
@@ -63,8 +105,16 @@ class ZPlus(object):
 										padding = self.layer.padding.upper())
 		return K.clip(self.act*C,self.minValue,self.maxValue)
 	
-	def run_conv(self,R,ignoreBias):
-		""">> RUN_CONV: Run the relevance propagation for conv layers."""
+	def run_conv(self,R,ignoreBias=False):
+		"""METHOD::RUN_CONV:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.
+			>- ignoreBias {bool} -- flag to add the biases or ignore them (default: {False})
+			Returns:
+			---
+			>The relevance of a dense layer."""
 		strdSize = (1,self.layer.strides[0],self.layer.strides[1],1)
 		weights = self.layer.get_weights()
 		self.W = K.maximum(weights[0],0.)
@@ -81,8 +131,17 @@ class ZPlus(object):
 										  S,strdSize,self.layer.padding.upper())
 		return K.clip(self.act*C,self.minValue,self.maxValue)
 
-class ZAlpha(object):
-	""">> CLASS:ZALPHA: Rule to compute the relevance propagation."""
+class ZAlpha(Rule):
+	"""CLASS::ZAlpha:
+		---
+		Description:
+		---
+		>Rule to compute the relevance propagation.
+		Arguments:
+		---
+		>- currLayer {tensor} -- layer object of the current layer.
+		>- nextAct {tensor} -- activations from the previous layer.
+		>- alpha {int} -- the parameter to set positive and negative influences."""
 	def __init__(self,currLayer,nextAct,alpha):
 		self.alpha = alpha
 		self.beta = 1-alpha
@@ -94,7 +153,17 @@ class ZAlpha(object):
 		self.minValue = -K.epsilon()
 		
 	def run(self,R,ignoreBias=False):
-		""">> RUN: run the relevance propagation for the current layer."""
+		"""METHOD::RUN:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.\n
+			>- ignoreBias {bool} -- flag to add the biases or ignore them (default: {False}).
+			Returns:
+			---
+			>- {tensor} -- The relevance from the current layer.
+			Raises:
+			---"""
 		if self.type == 'Dense':
 			return self.run_dense(R,ignoreBias)
 		elif self.type == 'MaxPooling2D':
@@ -103,11 +172,19 @@ class ZAlpha(object):
 			return self.run_conv(R,ignoreBias)
 		elif self.type == 'Flatten':
 			return self.run_flatten(R)
-		else:
-			raise NotImplementedError
+		#else:
+		#	raise NotImplementedError
 		
 	def run_dense(self,R,ignoreBias=False):
-		""">> RUN_DENSE: Run the relevance propagation for dense layers."""
+		"""METHOD::RUN_DENSE:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.
+			>- ignoreBias {bool} -- flag to add the biases or ignore them (default: {False})
+			Returns:
+			---
+			>The relevance of a dense layer."""
 		weights = self.layer.get_weights()
 		self.maxW = K.maximum(weights[0],0.); self.maxB = K.maximum(weights[1],0.)
 		self.minW = K.minimum(weights[0],0.); self.minB = K.minimum(weights[1],0.)   
@@ -120,13 +197,27 @@ class ZAlpha(object):
 		return K.clip(Rn,self.minValue,self.maxValue)
 		
 	def run_flatten(self,R):
-		""">> RUN_FLATTEN: Run the relevance propagation for flatten layers."""
+		"""METHOD::RUN_FLATTEN:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.
+			Returns: 
+			---
+			>- The relevance of a flatten layer."""
 		shape = self.act.get_shape().as_list()
 		shape[0] = -1
 		return K.reshape(R, shape)
 	
 	def run_pool(self,R):
-		""">> RUN_POOL: Run the relevance propagation for pool layers."""
+		"""METHOD:RUN_POOL:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.
+			Returns: 
+			---
+			>- The relevance of a pooling layer."""
 		poolSize = (1,self.layer.pool_size[0],self.layer.pool_size[1],1)
 		strdSize = (1,self.layer.strides[0],self.layer.strides[1],1)
 		pooled = tf.nn.max_pool(self.act, 
@@ -145,7 +236,15 @@ class ZAlpha(object):
 		return K.clip(Rn,self.minValue,self.maxValue)
 	
 	def run_conv(self,R,ignoreBias=True):
-		""">> RUN_CONV: Run the relevance propagation for conv layers."""
+		"""METHOD::RUN_CONV:
+			---
+			Arguments:
+			---
+			>- R {tensor} -- relevance tensor.
+			>- ignoreBias {bool} -- flag to add the biases or ignore them (default: {False})
+			Returns:
+			---
+			>The relevance of a dense layer."""
 		strdSize = (1,self.layer.strides[0],self.layer.strides[1],1)
 		weights = self.layer.get_weights()
 		self.maxW = K.maximum(weights[0],0.); self.maxB = K.maximum(weights[1],0.)
