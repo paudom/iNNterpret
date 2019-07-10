@@ -116,7 +116,9 @@ def reduce_channels(imgData,axis=-1,option='sum'):
 		---
 		>- imgData {np.array} -- Image data.
 		>- axis {int} -- To which axis to apply the reduction. (default:{-1}).
-		>- option {string} -- How to reduce the dimension (sum,mean). (default:{'sum'}).
+		>- option {string} -- How to reduce the dimension. (default:{'sum'}).
+		>>- 'sum'
+		>>- 'mean'
 		Returns:
 		---
 		>- {np.array} -- image data with just one channel."""

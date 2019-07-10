@@ -3,6 +3,7 @@ from __future__ import absolute_import
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image
+from ..utils.interfaces import Method
 from keras.models import Model
 import keras.backend as K
 import matplotlib
@@ -11,9 +12,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-class ActivationVis():
-	""">> CLASS: ACTIVATIONVIS: Method that allows you to get the activations from all layers.
-		Specialized for Convolution Networks."""
+class ActivationVis(Method):
+	"""CLASS::ActivationVis: 
+		---
+		Description:
+		---
+		> Method that allows you to get the activations from all layers.
+		Arguments:
+		---
+		>- model {keras.Model} -- Model to analyze.
+		>- saveDir {string} -- directory path where the images will be saved."""
 	def __init__(self,model,saveDir):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------\n')
@@ -32,14 +40,23 @@ class ActivationVis():
 		self.layerOutputs = layerOutputs
 		vrb.print_msg('========== DONE ==========\n')
 
-	def execute(self,fileName,cols=32,getAll=True):
-		""">> EXECUTE: returns the result of the method"""
+	def interpret(self,fileName,cols=32,getAll=True):
+		"""METHOD::INTERPRET:
+			---
+			Arguments:
+			---
+			>- fileName {string} -- The path of an image file.
+			>- cols {int} -- The number of feature maps in a line. (default:{32}).
+			>- getAll {bool} -- Flag to get the activations of all images in derectory or not. (default:{True}).
+			Returns:
+			---
+			>- A graph with all the feature maps."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		imgData = load_image(fileName)
 		outputs = self.model.predict(imgData)
 		if getAll:
-			for n,act in zip(range(len(outputs)),outputs):
+			for n,act in enumerate(outputs):
 				numFilters = act.shape[-1]
 				rows = numFilters // cols
 				fig = plt.figure(figsize=(cols,rows))

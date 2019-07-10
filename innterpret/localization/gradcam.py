@@ -4,17 +4,27 @@ from __future__ import absolute_import
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.tensor import decode_predictions
-from tensorflow.python.framework import ops
+from ..utils.interfaces import Method
 from PIL import Image as pilImage
 import numpy as np
 import keras.backend as K
-import tensorflow as tf
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
 
-class GradCAM():
-	""">> CLASS:GRADCAM: http://arxiv.org/abs/1610.02391."""
+class GradCAM(Method):
+	"""CLASS::GradCAM:
+		---
+		Description:
+		---
+		> Method to visualized where model is centring its attention.
+		Arguments:
+		---
+		>- model {keras.Model} -- Model to analyze.
+		>- layerName {string} -- The selected layer to visualize.
+		Link:
+		---
+		>- http://arxiv.org/abs/1610.02391."""
 	def __init__(self,model,layerName):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------\n')
@@ -24,8 +34,17 @@ class GradCAM():
 		self.numClasses = model.outputs[0].get_shape()[1]-1
 		vrb.print_msg('========== DONE ==========\n')
 
-	def execute(self,fileName,topCls=5,negGrad=False):
-		""">> EXECUTE: returns the result of the method."""
+	def interpret(self,fileName,topCls=5,negGrad=False):
+		"""METHOD::INTERPRET:
+			---
+			Arguments:
+			---
+			>- fileName {string} -- The path of the image data.
+			>- topCls {int} -- The number classes with the highest propability to show. (default:{5}).
+			>- negGrad {bool} -- Flag to determine how the gradients are computed. (default:{False}).
+			Returns:
+			---
+			>- {np.array} -- A heat map representing the areas where the model is focussing."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		self.rawData = load_image(fileName,preprocess=False)
@@ -54,7 +73,15 @@ class GradCAM():
 		return self.cam
 
 	def visualize(self,savePath,cmap='jet'):
-		""">> VISUALIZE: returns a graph with the results."""
+		"""METHOD::VISUALIZE
+			---
+			Arguments:
+			---
+			>- savePath {string} -- The path where the graph will be saved.
+			>- cmap {string} -- the color map used to graph the resulting heat map. (default:{'jet'}).
+			Returns:
+			---
+			>- {NONE}."""
 		vrb.print_msg('Visualize '+self.__class__.__name__+' Result...')
 		vrb.print_msg('--------------------------')
 		fig = plt.figure(figsize=(6, 4))

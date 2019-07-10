@@ -5,23 +5,47 @@ from colored import fg,attr
 
 # -- VERBOSE -- #
 class Verbose():
-	""">> CLASS:VERBOSE: responsible for displaying messages"""
+	"""CLASS::VERBOSE:
+		Description:
+		---
+		> Responsible for displaying messages
+		Arguments:
+		---
+		>- verbose {bool} -- Flag to detemrine if the messages will be displayed. (default:{True})."""
 	def __init__(self,verbose=True):
 		self.flag = verbose
 
 	def print_msg(self,message):
-		""">> PRINT_MSG: prints a message in a certain colour"""
+		"""METHOD::PRINT_MSG: prints a message in a certain colour.
+			---
+			Arguments:
+			---
+			>- message {string} -- message to display.
+			Returns:
+			---
+			>- {NONE}"""
 		if self.flag:
 			print(self.set_msg(message))
 
 	def set_msg(self,message):
-		""">> SET_MSG: returns a message in a certain colour."""
+		"""METHOD::SET_MSG:
+			---
+			Arguments:
+			---
+			>- message {string} -- Message to format.
+			Returns:
+			---
+			>- {string} -- A message in a certain colour"""
 		msg = fg(75)+message+attr(0)
 		return msg
 
 	@property
 	def switch_flag(self):
-		""">> SWITCH_FLAG: change the verbosity level of the Toolbox."""
+		"""METHOD::SWITCH_FLAG: change the verbosity level of the Toolbox.
+			---
+			Returns:
+			---
+			>- {NONE}."""
 		if self.flag:
 			self.flag = False
 		else:
@@ -29,10 +53,18 @@ class Verbose():
 		
 	@property
 	def set_colour(self):
-		""">> SET_COLOUR: sets the text colour."""
+		"""METHOD::SET_COLOUR: sets the text colour.
+			---
+			Returns:
+			---
+			>- {NONE}."""
 		print('%s' % fg(75))
 	
 	@property
 	def reset_colour(self):
-		""">> RESET_COLOUR: resets the text colour."""
+		"""METHOD::RESET_COLOUR: resets the text colour.
+			---
+			Returns:
+			---
+			>- {NONE}"""
 		print('%s' % attr(0))

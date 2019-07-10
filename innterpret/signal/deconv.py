@@ -4,15 +4,24 @@ from __future__ import absolute_import
 from .. import __verbose__ as vrb
 from ..utils.data import load_image,visualize_heatmap
 from ..utils.bases.layers import DConv2D,DInput,DFlatten,DActivation,DPooling,DDense,DBatch
-from tensorflow.python.framework import ops
-from keras.applications.vgg16 import VGG16
+from ..utils.interfaces import Method
 import PIL.Image as pilImage
 import numpy as np
-import tensorflow as tf
 import keras.backend as K
 
-class Deconvolution():
-	""">> CLASS:DECONVOLUTION: http://arxiv.org/abs/1311.2901."""
+class Deconvolution(Method):
+	"""CLASS::Deconvolution:
+		---
+		Description:
+		---
+		> Reconstructs the activation from a selected layer.
+		Arguments:
+		---
+		>- model {keras.Model} -- Model to analyze.
+		>- layerName {string} -- The name of the layer to reconstruct its activation.
+		Link:
+		---
+		>- http://arxiv.org/abs/1311.2901."""
 	def __init__(self,model,layerName):
 		self.numFilters = model.get_layer(layerName).output_shape[3]
 		self.deconvLayers = []
@@ -38,11 +47,22 @@ class Deconvolution():
 				break
 		vrb.print_msg('========== DONE ==========\n')
 
-	def execute(self,fileName,featVis,visMode='all'):
-		""">> EXECUTE: returns the result of the method."""
+	def interpret(self,fileName,featVis,visMode='all'):
+		"""METHOD::INTERPRET:
+			---
+			Arguments:
+			---
+			>- fileName {string} -- The path of the image data.
+			>- featVis {int} -- feature Map to visualize. 
+			>- visMode {string} -- The mode of reconstruction. (default:{'all'}).
+			>>- 'all'
+			>>- 'max'
+			Returns:
+			---
+			>- {np.array} -- Image representing the reconstruction of the activation."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		assert 0 <= featVis <= self.numFilters
+		#assert 0 <= featVis <= self.numFilters
 		self.rawData = load_image(fileName,preprocess=False)
 		imgInput = load_image(fileName)
 		vrb.print_msg('Forward Pass')
@@ -78,7 +98,14 @@ class Deconvolution():
 		return self.deconv
 
 	def visualize(self,savePath):
-		""">> VISUALIZE: returns a graph with the results."""
+		"""METHOD::VISUALIZE:
+			---
+			Arguments:
+			---
+			>- savePath {string} -- The path where the graph will be saved.
+			Returns:
+			---
+			>- {NONE}."""
 		vrb.print_msg('Visualize'+self.__class__.__name__+' Result...')
 		vrb.print_msg('--------------------------')
 		result = (self.deconv-self.deconv.min())/(self.deconv.max()-self.deconv.min()+K.epsilon())

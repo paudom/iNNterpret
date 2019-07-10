@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from .. import __verbose__ as vrb
 from ..utils.data import load_image
 from ..utils.tensor import decode_predictions
+from ..utils.interfaces import Method
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
@@ -11,8 +12,15 @@ import PIL
 import numpy as np
 import math
 
-class OcclusionMap():
-	""">> CLASS:OCCLUSIONMAP: Method that occludes part of the image and tracks the precision."""
+class OcclusionMap(Method):
+	"""CLASS::OcclusionMap: 
+		---
+		Description:
+		---
+		> Method that occludes part of the image and tracks the precision obtained each time.
+		Arguments:
+		---
+		>- model {keras.Model} -- Model to analyze."""
 	def __init__(self,model):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
@@ -21,8 +29,16 @@ class OcclusionMap():
 		self.numClasses = model.outputs[0].get_shape()[1]-1
 		vrb.print_msg('========== DONE ==========\n')
 
-	def execute(self,fileName,winSize=15,winStride=3):
-		""">> EXECUTE: returns the result of the method."""
+	def interpret(self,fileName,winSize=15,winStride=3):
+		"""METHOD::INTERPRET:
+			---
+			Arguments:
+			---
+			>- fileName {string} -- path of the image data.
+			>- winSize {int} -- The size of the mask. (default:{15}).
+			>- winStride {int} -- The stride taken each iteration. (default:{3}).
+			Returns:
+			>- {np.array} -- A heat map with the important areas of the image."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		#assert 1 <= winSize <= int(self.inputSize/4)
@@ -63,7 +79,15 @@ class OcclusionMap():
 		return self.invHeatMap
 
 	def visualize(self,savePath,cmap='jet'):
-		""">> VISUALIZE: returns a graph with the results."""
+		"""METHOD::VISUALIZE
+			---
+			Arguments:
+			---
+			>- savePath {string} -- The path where the graph will be saved.
+			>- cmap {string} -- the color map used to graph the resulting heat map. (default:{'jet'}).
+			Returns:
+			---
+			>- {NONE}."""
 		vrb.print_msg('Visualize '+self.__class__.__name__+' Result...')
 		vrb.print_msg('--------------------------')
 		imgRes = self.rawData.resize((self.outW, self.outH), PIL.Image.BILINEAR)

@@ -3,11 +3,20 @@ from __future__ import absolute_import
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
+from ..utils.interfaces import Method
 import numpy as np
 import keras.backend as K
 
-class Gradient():
-	""">> CLASS:GRADIENT: Computes the method of gradients for the model."""
+class Gradient(Method):
+	"""CLASS::Gradient:
+		---
+		Description:
+		---
+		> Computes the method of gradients for the model.
+		Arguments:
+		---
+		>- model {keras.Models} -- Model to analyze.
+		>- layerName {string} -- The selected layer to visualize."""
 	def __init__(self,model,layerName):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
@@ -21,7 +30,14 @@ class Gradient():
 		vrb.print_msg('========== DONE ==========\n')
 
 	def execute(self,fileName):
-		""">> EXECUTE: returns the result of the method."""
+		"""METHOD::INTERPRET:
+			---
+			Arguments:
+			---
+			>- fileName {string} -- The path to the image file.
+			Returns:
+			---
+			>- {np.array} -- The saliency of the image."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		self.rawData = load_image(fileName,preprocess=False)
@@ -34,7 +50,15 @@ class Gradient():
 		return self.heatMap
 
 	def visualize(self,savePath,cmap='bone'):
-		""">> VISUALIZE: returns a graph with the results."""
+		"""METHOD::VISUALIZE:
+			---
+			Arguments:
+			---
+			>- savePath {string} -- Path where the graph will be saved.
+			>- cmap {string} -- color map used to see the saliency map.
+			Returns:
+			---
+			>- {NONE}."""
 		vrb.print_msg('Visualize '+self.__class__.__name__+' Result...')
 		vrb.print_msg('--------------------------')
 		heatMap = deprocess_image(self.heatMap.copy())

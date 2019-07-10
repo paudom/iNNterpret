@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+# -- INTERFACES -- #
 class Rule(object):
 	"""INTERFACE::Rule:
 		---
@@ -30,3 +31,17 @@ class DeconvLayer(object):
 		#if not hasattr(cls,'down'):
 		   #raise NotImplementedError
 		return super(DeconvLayer,cls).__new__(cls)
+
+class Method(object):
+	"""INTERFACE::Method:
+		---
+		Description:
+		---
+		> Method Interface
+		Required:
+		---
+		>- METHOD::INTERPRET."""
+	def __new__(cls,*args,**kwargs):
+		#if not hasattr(cls,'interpret'):
+			#raise NotImplementedError
+		return super(Method,cls).__new__(cls)
