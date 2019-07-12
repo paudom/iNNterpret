@@ -4,11 +4,21 @@ from __future__ import absolute_import
 from .. import __verbose__ as vrb
 from ..utils.bases.metrics import Metrics
 from ..utils.data import get_image_list, load_image
+from ..utils.interfaces import Method
 import numpy as np
 import os
 
-class DistRobust():
-	""">> CLASS:DISTROBUST: Method that computes the distance between two classes."""
+class DistRobust(Method):
+	"""CLASS::DistRobust:
+		---
+		Description:
+		---
+		> Method that computes the distance between two classes.
+		Arguments:
+		---
+		>- model {keras.Model} -- Model to analyze.
+		>- classOneDir {string} -- Path containing the images of a certain class.
+		>- classTwoDir {string} -- Path containing the images of another class. """
 	def __init__(self,model,classOneDir,classTwoDir):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
@@ -26,16 +36,27 @@ class DistRobust():
 		#else:
 			#assert False, print_msg('This directory does not contain files with the ['+imgFormat+'] extension.',show=False,option='error')
 
-	def execute(self,metric):
-		""">> EXECUTE: returns the result of the method"""
+	def interpret(self,metric):
+		"""METHOD::INTERPRET:
+			---
+			Arguments:
+			>- metric {string} -- Selects the type of distance you want.
+			>>- 'euclidean'
+			>>- 'manhattan'
+			>>- 'cosine'
+			>>- 'minkowski'
+			>>- 'jaccard'
+			Returns:
+			---
+			>- {float} -- The average distance between the two classes."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		oneVect = []; twoVect = []
-		for k in range(len(self.classOne)):
-			img = load_image(self.classOne[k])
+		for image in self.classOne:
+			img = load_image(image)
 			oneVect.append(self.model.predict(img))
-		for k in range(len(self.classTwo)):
-			img = load_image(self.classTwo[k])
+		for image in self.classTwo:
+			img = load_image(image)
 			twoVect.append(self.model.predict(img))
 		meanOne = np.mean(np.array(oneVect),axis=0)
 		meanTwo = np.mean(np.array(twoVect),axis=0)

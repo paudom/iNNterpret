@@ -4,11 +4,20 @@ from __future__ import absolute_import
 from .. import __verbose__ as vrb
 from ..utils.data import get_image_list, load_image
 from ..utils.bases.metrics import Metrics
+from ..utils.interfaces import Method
 import numpy as np
 import os
 
-class SDEModel():
-	""">> CLASS:SDEMODEL: Method that presents similar training examples."""
+class SDEModel(Method):
+	"""CLASS::SDEModel:
+		--- 
+		Description:
+		---
+		> Method that presents similar training examples.
+		Arguments:
+		---
+		>- model {keras.Model} -- Model to analyze.
+		>- directory {string} -- Path to the images files to code them."""
 	def __init__(self,model,directory):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
@@ -25,8 +34,22 @@ class SDEModel():
 		#else:
 			#assert False, print_msg('This directory does not contain files with the ['+imgFormat+'] extension.',show=False,option='error')
 
-	def execute(self,fileName,metric,numK):
-		""">> EXECUTE: returns the result of the LRP method"""
+	def interpret(self,fileName,metric,numK):
+		"""METHOD::INTERPRET:
+			---
+			Arguments:
+			---
+			>- fileName {string} -- The path to the image file.
+			>- metric {string} -- the distance metric used.
+			>>- 'euclidean'
+			>>- 'manhattan'
+			>>- 'cosine'
+			>>- 'minkwoski'
+			>>- 'jaccard'
+			>- numK {int} -- Number of images to present.
+			Returns:
+			---
+			>- {list[string]} -- With all the paths to the files which are closer."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		distVector = []
