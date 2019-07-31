@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.interfaces import Method
+from ..utils.exceptions import NotAConvLayerError
 import numpy as np
 import keras.backend as K
 
@@ -21,12 +22,13 @@ class Gradient(Method):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
 		self.model = model
+		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
+			raise NotAConvLayerError('The layer "'+layerName+'" is not a convolutional layer.')
 		self.layerName = layerName
-		#assert self.model.get_layer(self.layerName).__class__.__name__ == 'Conv2D'
-		inputData = self.model.inputs[0]
+		inputLayer = self.model.inputs[0]
 		outputLayer = self.model.get_layer(self.layerName)
 		loss = K.mean(outputLayer.output)
-		self.gradient = K.function([inputData], [K.gradients(loss, inputData)[0]])
+		self.gradient = K.function([inputLayer], [K.gradients(loss, inputLayer)[0]])
 		vrb.print_msg('========== DONE ==========\n')
 
 	def execute(self,fileName):
@@ -40,12 +42,10 @@ class Gradient(Method):
 			>- {np.array} -- The saliency of the image."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		self.rawData = load_image(fileName,preprocess=False)
-		imgData = load_image(fileName)
+		self.rawData,imgData = load_image(fileName,preprocess=True)
 		gradImg = self.gradient([imgData])
-		heatMap = np.sum(gradImg[0],axis=-1)
-		heatMap[heatMap < np.mean(heatMap)] = 0
-		self.heatMap = heatMap
+		self.heatMap = np.sum(gradImg[0],axis=-1)
+		self.heatMap[self.heatMap < np.mean(heatMap)] = 0
 		vrb.print_msg('========== DONE ==========\n')
 		return self.heatMap
 

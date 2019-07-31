@@ -32,13 +32,13 @@ class ActMaximization(Method):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------\n')
 		self.model = model_remove_softmax(model)
-		self.imgInput = self.model.inputs[0]
+		self.input = self.model.inputs[0]
 		self.output = self.model.outputs[0]
 		self.numClass = self.output.shape[-1]
-		self.size = self.imgInput.shape[1]
+		self.size = self.input.shape[1]
 		loss = self.output[0,cls]
-		grads = K.gradients(loss,self.imgInput)[0]
-		self.gradient = K.function([self.imgInput],[loss,grads])
+		grads = K.gradients(loss,self.input)[0]
+		self.gradient = K.function([self.input],[loss,grads])
 		self.imgData = np.random.normal(0,10,(1,self.size,self.size,3))
 		vrb.print_msg('========== DONE ==========\n')
 
@@ -61,7 +61,7 @@ class ActMaximization(Method):
 			Returns:
 			---
 			>- {np.array} -- The image representing the patterns that maximize the selected class."""
-		velocity = np.zeros(self.imgInput.shape[1:])
+		velocity = np.zeros(self.input.shape[1:])
 		self.gifImg = []
 		self.gifImg.append(self.imgData[0].copy())
 		for k in range(epochs):

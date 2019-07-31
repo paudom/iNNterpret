@@ -1,4 +1,3 @@
-# -- TENSOR UTILITIES -- #
 from __future__ import absolute_import
 
 # -- IMPORTS -- #
@@ -146,7 +145,10 @@ def get_model_parameters(model):
 		>- model {keras.Model} -- The model to analyze.
 		Returns:
 		---
-		>- {list[string]},{list[np.array]},{list[tensor]},{list[tensor]} -- layer Names, Weights, Outputs and Activations."""
+		>- {list[string]} -- layer Names
+		>- {list[np.array]} -- layer Weights
+		>- {list[tensor]} -- layer Outputs
+		>- {list[tensor]} -- layer Activations."""
 	layerNames = []; layerOutputs = []; layerWeights = []; layerAct = []
 	for layer in model.layers:
 		layerNames.append(layer.name)
@@ -155,5 +157,23 @@ def get_model_parameters(model):
 		layerWeights.append(layer.get_weights)
 	return layerNames,layerWeights,layerOutputs,layerAct
 
+def get_conv_layers(model):
+	"""FUNCTION::GET_CONV_LAYERS:
+		---
+		Arguments:
+		---
+		>- model {keras.Models} -- A model to get the parameters.
+		Returns:
+		---
+		>- {list[string]} -- layer Names.
+		>- {list[tensor]} -- layer Outputs.
+		>- {list[tensor]} -- layer Weights."""
+		layerNames = []; layerOutputs = []; layerWeights = []
+		for layer in model.layers:
+			if layer.__class__.__name__ == 'Conv2D':
+				layerNames.append(layer.name)
+				layerOutputs.append(layer.output)
+				layerWeights.append(layer.get_weights)
+		return layerNames,layerOutputs,layerWeights
 
 

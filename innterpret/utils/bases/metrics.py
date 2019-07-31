@@ -4,6 +4,9 @@ from __future__ import absolute_import
 import math
 import numpy as np
 
+# -- AVAILABLE METRICS  -- #
+availableMetrics = ['euclidean','manhattan','minkowski','cosine','jaccard']
+
 # -- DISTANCE METRICS -- #
 class Metrics():
 	"""CLASS::Metrics:

@@ -5,6 +5,7 @@ from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.tensor import decode_predictions
 from ..utils.interfaces import Method
+from ..utils.exceptions import NotAConvLayerError
 from PIL import Image as pilImage
 import numpy as np
 import keras.backend as K
@@ -29,8 +30,9 @@ class GradCAM(Method):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------\n')
 		self.model = model
+		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
+			raise NotAConvLayerError('The layer "'+layerName+'" is not a convolution layer.')
 		self.layerName = layerName
-		#assert self.model.get_layer(self.layerName).__class__.__name__ == 'Conv2D'
 		self.numClasses = model.outputs[0].get_shape()[1]-1
 		vrb.print_msg('========== DONE ==========\n')
 
@@ -47,28 +49,27 @@ class GradCAM(Method):
 			>- {np.array} -- A heat map representing the areas where the model is focussing."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		self.rawData = load_image(fileName,preprocess=False)
-		imgInput = load_image(fileName)
+		self.rawData,imgInput = load_image(fileName,preprocess=True)
 		decoded = decode_predictions(self.model.predict(imgInput),top=topCls)
 		vrb.print_msg('Predicted classes: '+str(decoded))
-		clSel = int(input(vrb.set_msg('Select the class to explain (0-'+str(self.numClasses)+'): ')))
-		clScore = self.model.output[0, clSel]
+		self.selClass = int(input(vrb.set_msg('Select the class to explain (0-'+
+												str(self.numClasses)+'): ')))
+		clScore = self.model.output[0, self.selClass]
 		convOutput = self.model.get_layer(self.layerName).output
 		grads = K.gradients(clScore, convOutput)[0]
 		if negGrad:
-			vrb.print_msg('Negative Explanation')
+			vrb.print_msg('Setting Negative Explanation.')
 			grads = -grads
 		vrb.print_msg('Computing HeatMap')
 		vrb.print_msg('--------------------------')
 		self.gradient = K.function([self.model.input],[convOutput, grads])
 		output, gradsVal = self.gradient([imgInput])
-		output, gradsVal = output[0, :], gradsVal[0, :, :, :]
-		weights = np.mean(gradsVal,axis=(0,1))
-		cam = np.dot(output,weights)
-		cam = np.asarray(pilImage.fromarray(cam).resize((224,224),pilImage.BILINEAR),dtype='float32')
-		cam = np.maximum(cam, K.epsilon())
-		self.cam = cam/cam.max()
-		self.selectedClass = clSel
+		weights = np.mean(gradsVal[0, :, :, :],axis=(0,1))
+		self.cam = np.dot(output[0, :],weights)
+		self.cam = np.asarray(pilImage.fromarray(self.cam).resize((224,224),pilImage.BILINEAR),
+								dtype='float32')
+		self.cam = np.maximum(self.cam, K.epsilon())
+		self.cam = self.cam/self.cam.max()
 		vrb.print_msg('========== DONE ==========\n')
 		return self.cam
 

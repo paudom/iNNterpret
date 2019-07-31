@@ -15,19 +15,19 @@ print('Importing Modules...')
 from . import utils
 
 # -- IMPORT METHOD SUBPACKAGES -- #
-#from . import surrogate
-#from . import function
-#from . import signal
-#from . import attribution
-#from . import localization
-#from . import distance
+from . import surrogate
+from . import function
+from . import signal
+from . import attribution
+from . import localization
+from . import distance
 
 # -- RESET COLOR -- #
 print('========== DONE ==========')
 __verbose__.reset_colour
 
 # -- VERSION -- #
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 # -- AUTHOR -- #
 __author__ = 'Pau Domingo'

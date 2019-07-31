@@ -24,4 +24,4 @@ class PatternNet(Method):
 			---
 			Returns:
 			---"""
-		raise NotImplementedError
+		pass

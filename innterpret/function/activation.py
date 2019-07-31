@@ -3,6 +3,7 @@ from __future__ import absolute_import
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image
+from ..utils.tensor import get_conv_layers
 from ..utils.interfaces import Method
 from keras.models import Model
 import keras.backend as K
@@ -25,27 +26,19 @@ class ActivationVis(Method):
 	def __init__(self,model,saveDir):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------\n')
-		#if not os.path.isdir(saveDir):
-			#assert False, print_msg(saveDir+'is not a directory.',show=False,option='error')
+		if not os.path.isdir(saveDir):
+			raise NotADirectoryError('['+saveDir+'] is not a directory.')
 		self.saveDir = saveDir
-		layerOutputs = []; layerNames = []
-		for layer in model.layers:
-			if layer.__class__.__name__ == 'Conv2D':
-				layerNames.append(layer.name)
-				layerOutputs.append(layer.output)
-		#if not layerOutputs:
-			#assert False, print_msg('The model introduced do not have any Conv2D layer',show=False,option='error')
-		self.model = Model(inputs=model.input,outputs=layerOutputs)
-		self.layerNames = layerNames
-		self.layerOutputs = layerOutputs
+		self.layerNames,self.layerOutputs,_ = get_conv_layers(model)
+		self.model = Model(inputs=model.input,outputs=self.layerOutputs)
 		vrb.print_msg('========== DONE ==========\n')
 
-	def interpret(self,fileName,cols=32,getAll=True):
+	def interpret(self,filePath,cols=32,getAll=True):
 		"""METHOD::INTERPRET:
 			---
 			Arguments:
 			---
-			>- fileName {string} -- The path of an image file.
+			>- filePath {string} -- The path of an image file.
 			>- cols {int} -- The number of feature maps in a line. (default:{32}).
 			>- getAll {bool} -- Flag to get the activations of all images in derectory or not. (default:{True}).
 			Returns:
@@ -53,7 +46,7 @@ class ActivationVis(Method):
 			>- A graph with all the feature maps."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		imgData = load_image(fileName)
+		imgData = load_image(filePath)
 		outputs = self.model.predict(imgData)
 		if getAll:
 			for n,act in enumerate(outputs):
@@ -69,8 +62,6 @@ class ActivationVis(Method):
 				fileName = self.saveDir+os.sep+self.layerNames[n]+'.png'
 				fig.savefig(fileName,dpi=250)
 		else:
-			for k in self.layerNames:
-				vrb.print_msg(self.layerNames[k]+str(k))
 			layer = int(input(vrb.set_msg('Select a layer, from (0-%s): ' % str(len(self.layerNames)))))
 			featureMap = int(input(vrb.set_msg('Select desired feature map, from (0-%s): ' \
 				 % str(self.layerOutputs[layer].shape[3]-1))))

@@ -24,4 +24,4 @@ class DeepLIFT(Method):
 			---
 			Returns:
 			---"""
-		raise NotImplementedError
+		pass

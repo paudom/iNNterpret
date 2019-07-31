@@ -8,6 +8,10 @@ import tensorflow as tf
 import copy as cp
 import numpy as np
 
+# -- AVAILABLE RULES -- #
+availableRules = {'ZPlus':0, 'ZAlpha':1}
+
+# -- TYPES OF RULES -- #
 class ZPlus(Rule):
 	"""CLASS::ZPlus:
 		---

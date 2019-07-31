@@ -5,6 +5,7 @@ from .. import __verbose__ as vrb
 from ..utils.data import load_image,visualize_heatmap
 from ..utils.bases.layers import DConv2D,DInput,DFlatten,DActivation,DPooling,DDense,DBatch
 from ..utils.interfaces import Method
+from ..utils.exceptions import LayerNotManagableError, OptionNotSupported
 import PIL.Image as pilImage
 import numpy as np
 import keras.backend as K
@@ -41,8 +42,9 @@ class Deconvolution(Method):
 				self.deconvLayers.append(DFlatten(model.layers[i]))
 			elif model.layers[i].__class__.__name__ == 'InputLayer':
 				self.deconvLayers.append(DInput(model.layers[i]))
-			#else:
-				#assert False, print_msg('The specified layer can not be handled for Deconvolution',show=False,option='error')
+			else:
+				raise LayerNotManagableError('The layer ['+model.layers[i].name+'] can not be handled by "'+
+												self.__class__.__name__+'" method.')
 			if self.layerName == model.layers[i].name:
 				break
 		vrb.print_msg('========== DONE ==========\n')
@@ -62,16 +64,17 @@ class Deconvolution(Method):
 			>- {np.array} -- Image representing the reconstruction of the activation."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		#assert 0 <= featVis <= self.numFilters
-		self.rawData = load_image(fileName,preprocess=False)
-		imgInput = load_image(fileName)
+		if not 0 <= featVis <= self.numFilters
+		self.rawData, imgInput = load_image(fileName,preprocess=True)
 		vrb.print_msg('Forward Pass')
 		vrb.print_msg('--------------------------')
 		self.deconvLayers[0].up(imgInput)
 		for k in range(1, len(self.deconvLayers)):
 			self.deconvLayers[k].up(self.deconvLayers[k - 1].upData)
 		output = self.deconvLayers[-1].upData
-		#assert output.ndim == 2 or output.ndim == 4
+		if output.ndim != 2 or output.ndim != 4:
+			raise ValueError('The output dimensions from the layer "'+
+								self.deconvLayers[-1].layer.name+'" is not valid.')
 		if output.ndim == 2:
 			featureMap = output[:,featVis]
 		else:
@@ -80,8 +83,8 @@ class Deconvolution(Method):
 			maxAct = featureMap.max()
 			temp = featureMap == maxAct
 			featureMap = featureMap * temp
-		#elif visMode != 'all':
-			#assert False, print_msg('This visualization mode is not implemented',show=False,option='error')
+		elif visMode != 'all':
+			raise OptionNotSupported('The option "'+visMode+'" is not supported.')
 		output = np.zeros_like(output)
 		if 2 == output.ndim:
 			output[:,featVis] = featureMap

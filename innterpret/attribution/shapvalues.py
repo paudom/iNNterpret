@@ -21,4 +21,4 @@ class SHAPValues():
 			---
 			Returns:
 			---"""
-		raise NotImplementedError
+		pass

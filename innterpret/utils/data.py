@@ -1,4 +1,3 @@
-# -- DATA UTILITIES -- #
 from __future__ import absolute_import
 
 # -- IMPORTS -- #
@@ -6,6 +5,7 @@ from keras.preprocessing import image as kerasImage
 from PIL import Image as pilImage
 from glob import glob
 import keras.backend as K
+from utils.exceptions import OptionNotSupported
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
@@ -73,22 +73,36 @@ def vector_to_img(array, height, width):
 		>- {np.array} -- A numpy array representing the image reconstructed."""
 	return array.reshape(height,width,3)
 
-def load_image(imgPath, targetSize=(224,224), preprocess=True):
+def load_image(imgPath, targetSize=(224,224), preprocess=False):
 	"""FUNCTION::LOAD_IMAGE: Loads an image given the path and sets the size.
 		---
 		Arguments:
 		---
 		>- imgPath {string} -- Path of the image.
-		>- targetSize {tuple(int,int)} -- Height and Widht of the resulting image.
-		>- preprocess {bool} -- A flag to get a preprocess or get the unmodified image. (default:{True}).
+		>- targetSize {tuple(int,int)} -- Height and Widht of the resulting image. (default:{(224,224)}).
+		>- preprocess {bool} -- A flag to get a preprocess or get the unmodified image. (default:{False}).
 		Returns:
 		---
-		>- {np.array} -- data representing the image."""
-	data = kerasImage.load_img(imgPath, target_size=targetSize)
+		>- If 'preprocess' is desactivated then:
+		>>- {PIL.image} -- original image.
+		>>- {np.array} -- data representing the image.
+		>- If not:
+		>>- {np.array} -- data representing the image.
+		Raises:
+		---
+		>- FileNotFound {Exception} -- If the filename specified is not found."""
+	if not os.path.isfile(imgPath):
+		raise FileNotFoundError('The file "'+imgPath+'" is not found.')
+	img = kerasImage.load_img(imgPath, target_size=targetSize)
+	data = process_image(img)
 	if preprocess:
-		data = kerasImage.img_to_array(data)
-		data = np.expand_dims(data, axis=0)
+		return img,data
 	return data
+
+def process_image(imgData):
+	"""FUNCTION::PROCESS_IMAGE: Process an image to prepare it for the model."""
+	data = kerasImage.img_to_array(imgData)
+	return np.expand_dims(data,axis=0)
 
 def get_image_list(dirPath,imgFormat,justOne=True):
 	"""FUNCTION::GET_IMAGE_LIST: Get a list with all image filename/s of a certain directory.
@@ -127,7 +141,7 @@ def reduce_channels(imgData,axis=-1,option='sum'):
 	elif option == 'mean':
 		return imgData.mean(axis=axis)
 	else:
-		raise NotImplementedError
+		raise OptionNotSupported('The option "'+option+'" is not supported.')
 
 def deprocess_image(img,scale=0.1,dtype='uint8'):
 	"""FUNCTION::DEPROCESS_IMAGE: Converts an image into a valid image.

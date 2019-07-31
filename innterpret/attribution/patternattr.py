@@ -24,4 +24,4 @@ class PatternAttribution(Method):
 			---
 			Returns:
 			---"""
-		raise NotImplementedError
+		pass

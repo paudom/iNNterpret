@@ -3,8 +3,9 @@ from __future__ import absolute_import
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import get_image_list, load_image
-from ..utils.bases.metrics import Metrics
+from ..utils.bases.metrics import Metrics, availableMetrics
 from ..utils.interfaces import Method
+from ..utils.exceptions import EmptyDirectoryError, OptionNotSupported
 import numpy as np
 import os
 
@@ -17,22 +18,30 @@ class SDEModel(Method):
 		Arguments:
 		---
 		>- model {keras.Model} -- Model to analyze.
-		>- directory {string} -- Path to the images files to code them."""
+		>- directory {string} -- Path to the images files to code them.
+		Raises:
+		---
+		>- NotADirectoryError {Exception} -- If the directory introduced is not a directory.
+		>- EmptyDirectory {Exception} -- If the directory does not contain files with the specified image format."""
 	def __init__(self,model,directory):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
 		self.model = model
 		self.data = {}
 		self.metric = Metrics()
+		if not os.path.isdir(directory):
+			raise NotADirectoryError('['+directory+'] is not a directory.')
 		imgFormat = input(vrb.set_msg('Select the extension of the images: '))
-		fileNames = get_image_list(directory, imgFormat)
-		if fileNames:
-			for k in range(len(fileNames)):
-				imgArray = load_image(fileNames[k])
-				self.data[fileNames[k]] = model.predict(imgArray)
+		self.fileNames = get_image_list(directory, imgFormat)
+		if self.fileNames:
+			for img in fileNames:
+				imgArray = load_image(img)
+				self.data[img] = model.predict(imgArray)
 			vrb.print_msg('========== DONE ==========\n')
-		#else:
-			#assert False, print_msg('This directory does not contain files with the ['+imgFormat+'] extension.',show=False,option='error')
+		else:
+			raise EmptyDirectoryError('The directory '+
+				directory+' does not contain files with the ['+imgFormat+'] extension.')
+			
 
 	def interpret(self,fileName,metric,numK):
 		"""METHOD::INTERPRET:
@@ -47,33 +56,34 @@ class SDEModel(Method):
 			>>- 'minkwoski'
 			>>- 'jaccard'
 			>- numK {int} -- Number of images to present.
+			Raises:
+			---
+			>- OptionNotSupported {Exception} -- If the metric option is not supported.
 			Returns:
 			---
 			>- {list[string]} -- With all the paths to the files which are closer."""
+		if metric not in availableMetrics:
+			raise OptionNotSupported('The option "'+metric+'" is not supported.')
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		distVector = []
+		if metric == 'minkowski':
+			pVal = int(input(vrb.set_msg('Select the P value for the Minkowski distance: ')))
+		distVector = {}
 		imgInput = load_image(fileName)
 		pred = self.model.predict(imgInput)
-		allOutputs = list(self.data.values())
-		allFiles = self.data.keys()
-		for k in range(len(allOutputs)):
+		for imgPath,imgFile in self.data.items():
 			if metric == 'euclidean':
-				distVector.append(self.metric.euclidean_distance(pred,allOutputs[k]))
+				distVector[imgPath] = self.metric.euclidean_distance(pred,imgFile)
 			elif metric == 'manhattan':
-				distVector.append(self.metric.manhattan_distance(pred,allOutputs[k]))
+				distVector.[imgPath] = self.metric.manhattan_distance(pred,imgFile))
 			elif metric == 'minkowski':
-				pVal = int(input(vrb.set_msg('Select the P value for the Minkowski distance: ')))
-				distVector.append(self.metric.minkowski_distance(pred,allOutputs[k],pVal))
+				distVector.[imgPath] = self.metric.minkowski_distance(pred,imgFile,pVal)
 			elif metric == 'cosine':
-				distVector.append(self.metric.cosine_distance(pred,allOutputs[k]))
+				distVector.[imgPath] = self.metric.cosine_distance(pred,imgFile))
 			elif metric == 'jaccard':
-				distVector.append(self.metric.jaccard_distance(pred,allOutputs[k]))
-			else:
-				raise NotImplementedError
-		indices = np.argsort(np.array(distVector))[:numK]
+				distVector.[imgPath] = self.metric.jaccard_distance(pred,imgFile))
 		candidates = []
-		for k in range(len(indices)):
-			candidates.append(allFiles[indices[k]])
+		for k in range(numK):
+			candidates.append(min(distVector,key=distVector.get))
 		vrb.print_msg('========== DONE ==========\n')
 		return candidates
