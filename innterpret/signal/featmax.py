@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from .. import __verbose__ as vrb
 from ..utils.data import deprocess_image
 from ..utils.interfaces import Method
-from ..utils.exceptions import NotAValidTensorError
+from ..utils.exceptions import TensorNotValidException
 
 class FeatMaximization(Method):
 	"""CLASS::FeatMaximization:
@@ -31,6 +31,7 @@ class FeatMaximization(Method):
 		Raises:
 		---
 		>- ValueError {Exception} -- If the 'featureMap' is wrong.
+		>- TensorNotValidException {Exception} -- If the layer specified is not a convolution layer. 
 		Link:
 		---
 		>- http://arxiv.org/abs/1312.6034."""
@@ -41,7 +42,7 @@ class FeatMaximization(Method):
 		self.model = model
 		self.input = self.model.inputs[0]
 		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
-			raise NotAValidTensorError('The layer "'+layerName+'" is not a convolution layer')
+			raise TensorNotValidException('The layer "'+layerName+'" is not a convolution layer')
 		self.layerName = layerName
 		self.layer = self.model.get_layer(self.layerName)
 		if not 0 <= featureMap <= self.layer.shape[-1]-1:

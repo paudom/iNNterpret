@@ -27,8 +27,8 @@ class EmptyDirectoryError(Exception):
         print(msg)
     sys.excepthook = myexcepthook
 
-class NotAValidTensorError(Exception):
-    """EXCEPTION::NotAValidTensorError:
+class TensorNotValidException(Exception):
+    """EXCEPTION::TensorNotValidException:
         ---
         Cause:
         ---

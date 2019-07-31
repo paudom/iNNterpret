@@ -13,7 +13,7 @@ from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.tensor import decode_predictions
 from ..utils.interfaces import Method
-from ..utils.exceptions import NotAValidTensorError
+from ..utils.exceptions import TensorNotValidException
 
 class GradCAM(Method):
 	"""CLASS::GradCAM:
@@ -27,7 +27,7 @@ class GradCAM(Method):
 		>- layerName {string} -- The selected layer to visualize.
 		Raises:
 		---
-		>- NotAValidTensorError {Exception} -- If the layer specified is not a convolution layer.
+		>- TensorNotValidException {Exception} -- If the layer specified is not a convolution layer.
 		Link:
 		---
 		>- http://arxiv.org/abs/1610.02391."""
@@ -36,7 +36,7 @@ class GradCAM(Method):
 		vrb.print_msg('--------------------------\n')
 		self.model = model
 		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
-			raise NotAValidTensorError('The layer "'+layerName+'" is not a convolution layer.')
+			raise TensorNotValidException('The layer "'+layerName+'" is not a convolution layer.')
 		self.layerName = layerName
 		self.numClasses = model.outputs[0].get_shape()[1]-1
 		vrb.print_msg('========== DONE ==========\n')

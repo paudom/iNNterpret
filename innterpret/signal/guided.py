@@ -11,7 +11,7 @@ from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.tensor import load_vgg16, load_vgg19, load_model
 from ..utils.interfaces import Method
-from ..utils.exceptions import NotAValidTensorError
+from ..utils.exceptions import TensorNotValidException
 
 class GuidedBackProp(Method):
 	"""CLASS::GuidedBackProp:
@@ -30,7 +30,7 @@ class GuidedBackProp(Method):
 		>- h5file {string} -- Path to the h5file, specify if option is 'other'.(default:{None}).
 		Raises:
 		---
-		>- NotAValidTensorError {Exception} -- If the layer specified is not a convolution layer.
+		>- TensorNotValidException {Exception} -- If the layer specified is not a convolution layer.
 		Link:
 		---
 		>- http://arxiv.org/abs/1412.6806."""
@@ -38,7 +38,7 @@ class GuidedBackProp(Method):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
 		if model.get_layer(layerName).__class__.__name__ != 'Conv2D':
-			raise NotAValidTensorError('The layer "'+layerName+'" is not a convolution layer.')
+			raise TensorNotValidException('The layer "'+layerName+'" is not a convolution layer.')
 		if 'GuidedBackProp' not in ops._gradient_registry._registry:
 			@ops.RegisterGradient("GuidedBackProp")
 			def _GuidedBackProp(op, grad):

@@ -8,7 +8,7 @@ import keras.backend as K
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.interfaces import Method
-from ..utils.exceptions import NotAValidTensorError
+from ..utils.exceptions import TensorNotValidException
 
 class Gradient(Method):
 	"""CLASS::Gradient:
@@ -22,13 +22,13 @@ class Gradient(Method):
 		>- layerName {string} -- The selected layer to visualize.
 		Raises:
 		---
-		>- NotAValidTensorError {Exception} -- If the layer specified is not a convolution layer."""
+		>- TensorNotValidException {Exception} -- If the layer specified is not a convolution layer."""
 	def __init__(self,model,layerName):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
 		self.model = model
 		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
-			raise NotAValidTensorError('The layer "'+layerName+'" is not a convolutional layer.')
+			raise TensorNotValidException('The layer "'+layerName+'" is not a convolutional layer.')
 		self.layerName = layerName
 		inputLayer = self.model.inputs[0]
 		outputLayer = self.model.get_layer(self.layerName)

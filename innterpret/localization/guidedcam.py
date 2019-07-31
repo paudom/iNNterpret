@@ -17,7 +17,7 @@ from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.tensor import load_model, load_vgg16, load_vgg19
 from ..utils.tensor import decode_predictions
 from ..utils.interfaces import Method
-from ..utils.exceptions import NotAValidTensorError
+from ..utils.exceptions import TensorNotValidException
 
 class GuidedGradCAM(Method):
 	"""CLASS::GuidedGradCAM:
@@ -36,7 +36,7 @@ class GuidedGradCAM(Method):
 		>- h5file {strin} -- Path to the h5file, specify if option is 'other'.(default:{None}).
 		Raises:
 		---
-		>- NotAValidTensorError {Exception} -- If the layer specified is not a convolution layer.
+		>- TensorNotValidException {Exception} -- If the layer specified is not a convolution layer.
 		Link:
 		---
 		>- http://arxiv.org/abs/1610.02391."""
@@ -45,7 +45,7 @@ class GuidedGradCAM(Method):
 		vrb.print_msg('--------------------------')
 		self.model = model
 		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
-			raise NotAValidTensorError('The layer "'+layerName+'" is not a convolution layer.')
+			raise TensorNotValidException('The layer "'+layerName+'" is not a convolution layer.')
 		self.layerName = layerName
 		self.numClasses = self.model.outputs[0].get_shape()[1]-1
 		if 'GuidedBackProp' not in ops._gradient_registry._registry:

@@ -9,7 +9,7 @@ import h5py
 import os
 
 # -- IMPORT -- #
-from .exceptions import H5FileCorruptedError, NotAValidTensorError
+from .exceptions import H5FileCorruptedError, TensorNotValidException
 
 def load_vgg16(trained=True):
 	"""FUNCTION::LOAD_VGG16: Load pretrained VGG16 model from keras.
@@ -121,9 +121,9 @@ def model_remove_softmax(model):
 		>- {keras.Model} -- Returns a model without the softmax activation at the end.
 		Raises:
 		---
-		>- NotAValidTensorError {Exception} -- If the model has not a softmax activation."""
+		>- TensorNotValidException {Exception} -- If the model has not a softmax activation."""
 	if model.layers[-1].activation.__name__ != keras.activations.softmax.__name__:
-		raise NotAValidTensorError('The model introduced has not a softmax activation.')
+		raise TensorNotValidException('The model introduced has not a softmax activation.')
 	outShape = model.outputs[0].shape[-1]
 	outName = model.layers[-1].name
 	weights = model.layers[-1].get_weights()

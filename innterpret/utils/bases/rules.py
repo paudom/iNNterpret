@@ -9,7 +9,7 @@ import numpy as np
 
 # -- IMPORT -- #
 from ..interfaces import Rule
-from ..exceptions import NotAValidTensorError
+from ..exceptions import TensorNotValidException
 
 # -- AVAILABLE RULES -- #
 availableRules = {'ZPlus':0, 'ZAlpha':1}
@@ -45,7 +45,7 @@ class ZPlus(Rule):
 			>- {tensor} -- The relevance from the current layer.
 			Raises:
 			---
-			>- NotAValidTensorError {Exception} -- When the layer encountered is not valid.
+			>- TensorNotValidException {Exception} -- When the layer encountered is not valid.
 			"""
 		if self.type == 'Dense':
 			return self.run_dense(R,ignoreBias)
@@ -56,7 +56,7 @@ class ZPlus(Rule):
 		elif self.type == 'Flatten':
 			return self.run_flatten(R)
 		else:
-			raise NotAValidTensorError('The layer "'+self.type+'" encountered can be handled.')
+			raise TensorNotValidException('The layer "'+self.type+'" encountered can be handled.')
 			
 	def run_dense(self,R,ignoreBias=False):
 		"""METHOD::RUN_DENSE:
@@ -171,7 +171,7 @@ class ZAlpha(Rule):
 			---
 			>- {tensor} -- The relevance from the current layer.
 			Raises:
-			--- NotAValidTensorError {Exception} -- When the layer encountered is not valid."""
+			--- TensorNotValidException {Exception} -- When the layer encountered is not valid."""
 		if self.type == 'Dense':
 			return self.run_dense(R,ignoreBias)
 		elif self.type == 'MaxPooling2D':
@@ -181,7 +181,7 @@ class ZAlpha(Rule):
 		elif self.type == 'Flatten':
 			return self.run_flatten(R)
 		else:
-			raise NotAValidTensorError('The layer "'+self.type+'" encountered can be handled.')
+			raise TensorNotValidException('The layer "'+self.type+'" encountered can be handled.')
 		
 	def run_dense(self,R,ignoreBias=False):
 		"""METHOD::RUN_DENSE:
