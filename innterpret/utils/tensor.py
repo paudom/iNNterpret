@@ -1,12 +1,14 @@
 from __future__ import absolute_import
 
-# -- IMPORTS -- #
+# -- EXTERN IMPORT -- #
 import keras.backend as K
 import numpy as np
 import keras
 import json 
 import h5py 
 import os
+
+# -- IMPORT -- #
 from .exceptions import H5FileCorruptedError, NotAValidTensorError
 
 def load_vgg16(trained=True):
@@ -45,7 +47,11 @@ def load_model(h5file):
 		>- h5file {string} -- Path to the h5 file containing the model.
 		Returns:
 		---
-		>- {model} -- The model."""
+		>- {model} -- The model.
+		Raises: 
+		---
+		>- FileNotFoundError {Exception} -- If the file specified does not exists.
+		>- H5FileCorruptedError {Exception} -- If the h5file is corrupted and can not be readed."""
 	if not os.path.isfile(h5file):
 		raise FileNotFoundError('The file "'+h5file+'" was not found')
 	try:
@@ -112,7 +118,10 @@ def model_remove_softmax(model):
 		>- model {keras.Model} -- A model you want to modify.
 		Returns:
 		---
-		>- {keras.Model} -- Returns a model without the softmax activation at the end."""
+		>- {keras.Model} -- Returns a model without the softmax activation at the end.
+		Raises:
+		---
+		>- NotAValidTensorError {Exception} -- If the model has not a softmax activation."""
 	if model.layers[-1].activation.__name__ != keras.activations.softmax.__name__:
 		raise NotAValidTensorError('The model introduced has not a softmax activation.')
 	outShape = model.outputs[0].shape[-1]

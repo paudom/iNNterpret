@@ -1,10 +1,6 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.data import load_image
-from ..utils.tensor import get_conv_layers
-from ..utils.interfaces import Method
+# -- EXTERN IMPORT -- #
 from keras.models import Model
 import keras.backend as K
 import matplotlib
@@ -12,6 +8,12 @@ matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.data import load_image
+from ..utils.tensor import get_conv_layers
+from ..utils.interfaces import Method
 
 class ActivationVis(Method):
 	"""CLASS::ActivationVis: 
@@ -22,7 +24,10 @@ class ActivationVis(Method):
 		Arguments:
 		---
 		>- model {keras.Model} -- Model to analyze.
-		>- saveDir {string} -- directory path where the images will be saved."""
+		>- saveDir {string} -- directory path where the images will be saved.
+		Raises:
+		---
+		>- NotADirectoryError {Exception} -- If the directory introduced does not exists."""
 	def __init__(self,model,saveDir):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------\n')
@@ -43,7 +48,10 @@ class ActivationVis(Method):
 			>- getAll {bool} -- Flag to get the activations of all images in derectory or not. (default:{True}).
 			Returns:
 			---
-			>- A graph with all the feature maps."""
+			>- A graph with all the feature maps.
+			Raises:
+			---
+			>- ValueError {Exception} -- If the layer and feature maps selected are invalid."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		imgData = load_image(filePath)
@@ -63,8 +71,14 @@ class ActivationVis(Method):
 				fig.savefig(fileName,dpi=250)
 		else:
 			layer = int(input(vrb.set_msg('Select a layer, from (0-%s): ' % str(len(self.layerNames)))))
+			if not 0 <= layer <= len(self.layerNames):
+				raise ValueError('The layer introduced is not valid. It has to be between [0,'+
+									self.layerNames+'].')
 			featureMap = int(input(vrb.set_msg('Select desired feature map, from (0-%s): ' \
 				 % str(self.layerOutputs[layer].shape[3]-1))))
+			if not 0 <= featureMap <= self.layerOutputs[layer].shape[3]-1:
+				raise ValueError('The feature map introduced is not valid. It has to be between [0,'+
+									self.layerOutputs[layer].shape[3]-1+'].')
 			fig = plt.figure(figsize=(6,4))
 			plt.imshow(outputs[layer][0,:,:,featureMap],cmap='gray')
 			plt.xticks([]); plt.yticks([])

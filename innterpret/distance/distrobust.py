@@ -1,13 +1,15 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+import numpy as np
+import os
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.bases.metrics import Metrics, availableMetrics
 from ..utils.data import get_image_list, load_image
 from ..utils.interfaces import Method
 from ..utils.exceptions import EmptyDirectoryError, OptionNotSupported
-import numpy as np
-import os
 
 class DistRobust(Method):
 	"""CLASS::DistRobust:
@@ -31,17 +33,17 @@ class DistRobust(Method):
 		self.metric = Metrics()
 		imgFormat = input(vrb.set_msg('Select the extension of the images: '))
 		if not os.path.isdir(classOneDir):
-			raise NotADirectoryError('['+classOneDir+'] is not a directory.')
+			raise NotADirectoryError('The directory "'+classOneDir+'" is not a directory.')
 		if not os.path.isdir(classTwoDir):
-			raise NotADirectoryError('['+classTwoDir+'] is not a directory.')
+			raise NotADirectoryError('The directory "'+classTwoDir+'" is not a directory.')
 		self.classOne = get_image_list(classOneDir,imgFormat,justOne=False)
 		self.classTwo = get_image_list(classTwoDir,imgFormat,justOne=False)
 		if not self.classOne:
-			raise EmptyDirectoryError('The directory '+
-				classOneDir+' does not contain files with the ['+imgFormat+'] extension.')
+			raise EmptyDirectoryError('The directory "'+
+				classOneDir+'" does not contain files with the ['+imgFormat+'] extension.')
 		if not self.classTwo:
-			raise EmptyDirectoryError('The directory '+
-				classTwoDir+' does not contain files with the ['+imgFormat+'] extension.')
+			raise EmptyDirectoryError('The directory "'+
+				classTwoDir+'" does not contain files with the ['+imgFormat+'] extension.')
 		vrb.print_msg('========== DONE ==========\n')
 			
 	def interpret(self,metric):

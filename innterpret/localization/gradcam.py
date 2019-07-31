@@ -1,17 +1,19 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.data import load_image, deprocess_image, visualize_heatmap
-from ..utils.tensor import decode_predictions
-from ..utils.interfaces import Method
-from ..utils.exceptions import NotAValidTensorError
+# -- EXTERN IMPORT -- #
 from PIL import Image as pilImage
 import numpy as np
 import keras.backend as K
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.data import load_image, deprocess_image, visualize_heatmap
+from ..utils.tensor import decode_predictions
+from ..utils.interfaces import Method
+from ..utils.exceptions import NotAValidTensorError
 
 class GradCAM(Method):
 	"""CLASS::GradCAM:
@@ -23,6 +25,9 @@ class GradCAM(Method):
 		---
 		>- model {keras.Model} -- Model to analyze.
 		>- layerName {string} -- The selected layer to visualize.
+		Raises:
+		---
+		>- NotAValidTensorError {Exception} -- If the layer specified is not a convolution layer.
 		Link:
 		---
 		>- http://arxiv.org/abs/1610.02391."""
@@ -46,7 +51,10 @@ class GradCAM(Method):
 			>- negGrad {bool} -- Flag to determine how the gradients are computed. (default:{False}).
 			Returns:
 			---
-			>- {np.array} -- A heat map representing the areas where the model is focussing."""
+			>- {np.array} -- A heat map representing the areas where the model is focussing.
+			Raises:
+			---
+			>- ValueError {Exception} -- If the selected class is not valid."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		self.rawData,imgInput = load_image(fileName,preprocess=True)
@@ -54,6 +62,9 @@ class GradCAM(Method):
 		vrb.print_msg('Predicted classes: '+str(decoded))
 		self.selClass = int(input(vrb.set_msg('Select the class to explain (0-'+
 												str(self.numClasses)+'): ')))
+		if not 0 <= self.selClass <= self.numClasses:
+			raise ValueError('The selected class is not valid. It has to be between [0,'+
+								self.numClasses+'].')
 		clScore = self.model.output[0, self.selClass]
 		convOutput = self.model.get_layer(self.layerName).output
 		grads = K.gradients(clScore, convOutput)[0]

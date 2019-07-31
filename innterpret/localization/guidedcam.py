@@ -1,12 +1,6 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.data import load_image, deprocess_image, visualize_heatmap
-from ..utils.tensor import load_model, load_vgg16, load_vgg19
-from ..utils.tensor import decode_predictions
-from ..utils.interfaces import Method
-from ..utils.exceptions import NotAValidTensorError
+# -- EXTERN IMPORT -- #
 from tensorflow.python.framework import ops
 from keras.applications.vgg16 import VGG16
 from PIL import Image as pilImage
@@ -16,6 +10,14 @@ import tensorflow as tf
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.data import load_image, deprocess_image, visualize_heatmap
+from ..utils.tensor import load_model, load_vgg16, load_vgg19
+from ..utils.tensor import decode_predictions
+from ..utils.interfaces import Method
+from ..utils.exceptions import NotAValidTensorError
 
 class GuidedGradCAM(Method):
 	"""CLASS::GuidedGradCAM:
@@ -32,6 +34,9 @@ class GuidedGradCAM(Method):
 		>>- 'vgg19'
 		>>- 'other'.
 		>- h5file {strin} -- Path to the h5file, specify if option is 'other'.(default:{None}).
+		Raises:
+		---
+		>- NotAValidTensorError {Exception} -- If the layer specified is not a convolution layer.
 		Link:
 		---
 		>- http://arxiv.org/abs/1610.02391."""
@@ -76,13 +81,19 @@ class GuidedGradCAM(Method):
 			>- negGrad {bool} -- Flag to determine how the gradients are computed. (default:{False}).
 			Returns:
 			---
-			>- {np.array} -- A heat map representing the areas where the model is focussing."""
+			>- {np.array} -- A heat map representing the areas where the model is focussing.
+			Raises:
+			---
+			>- ValueError {Exception} -- If the selected class is not valid."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		self.rawData,imgInput = load_image(fileName,preprocess=True)
 		decoded = decode_predictions(self.model.predict(imgInput),top=topCls)
 		vrb.print_msg('Predicted classes: '+str(decoded))
 		selClass = int(input(vrb.set_msg('Select the class to explain (0-'+str(self.numClasses)+'): ')))
+		if not 0 <= selClass <= self.numClasses:
+			raise ValueError('The class selected is invalid. It has to be between [0,'+
+								self.numClasses+'].')
 		clScore = self.model.output[0, selClass]
 		convOutput = self.model.get_layer(self.layerName).output
 		grads = K.gradients(clScore, convOutput)[0]

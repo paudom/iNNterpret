@@ -1,5 +1,10 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORTS -- #
+from keras.models import Model
+import keras.backend as K
+import numpy as np
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.tensor import model_remove_softmax, get_model_parameters, print_tensor_shape
@@ -7,9 +12,6 @@ from ..utils.bases.rules import ZPlus, ZAlpha, availableRules
 from ..utils.data import load_image, reduce_channels, deprocess_image, visualize_heatmap
 from ..utils.interfaces import Method
 from ..utils.exceptions import OptionNotSupported
-from keras.models import Model
-import keras.backend as K
-import numpy as np
 
 class LRPModel(Method):
 	"""CLASS::LRPModel:

@@ -1,12 +1,14 @@
 from __future__ import absolute_import
 
-# --  IMPORT -- #
-from ..interfaces import DeconvLayer
+# --  EXTERN IMPORT -- #
 from keras.layers import Input, InputLayer, Dense, Conv2D, MaxPooling2D, Flatten, Activation
 import tensorflow as tf
 import keras.backend as K
 import numpy as np
 import math
+
+# -- IMPORT -- #
+from ..interfaces import DeconvLayer
 
 class DConv2D(DeconvLayer):
 	"""CLASS::DConv2D:

@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+import numpy as np
+from PIL import Image, ImageEnhance
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, process_image, visualize_heatmap
 from .gradient import Gradient
-import numpy as np
-from PIL import Image, ImageEnhance
 
 class IntegratedGrad(Gradient):
 	"""CLASS::IntegratedGrad:

@@ -1,16 +1,18 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.data import load_image
-from ..utils.tensor import decode_predictions
-from ..utils.interfaces import Method
+# -- EXTERN IMPORT -- #
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
 import PIL
 import numpy as np
 import math
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.data import load_image
+from ..utils.tensor import decode_predictions
+from ..utils.interfaces import Method
 
 class OcclusionMap(Method):
 	"""CLASS::OcclusionMap: 
@@ -38,7 +40,10 @@ class OcclusionMap(Method):
 			>- winSize {int} -- The size of the mask. (default:{15}).
 			>- winStride {int} -- The stride taken each iteration. (default:{3}).
 			Returns:
-			>- {np.array} -- A heat map with the important areas of the image."""
+			>- {np.array} -- A heat map with the important areas of the image.
+			Raises:
+			---
+			>- ValueError {Exception} -- If the window size or stride ar not correctly set."""
 		if not 1 <= winSize <= int(self.inputSize/4):
 			raise ValueError('The window size needs to be between the interval: [1,'+
 								str(int(self.inputSize/4))+'].')

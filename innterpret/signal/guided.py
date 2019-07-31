@@ -1,15 +1,17 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+from tensorflow.python.framework import ops
+from keras.applications.vgg16 import VGG16
+import tensorflow as tf
+import keras.backend as K
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.tensor import load_vgg16, load_vgg19, load_model
 from ..utils.interfaces import Method
 from ..utils.exceptions import NotAValidTensorError
-from tensorflow.python.framework import ops
-from keras.applications.vgg16 import VGG16
-import tensorflow as tf
-import keras.backend as K
 
 class GuidedBackProp(Method):
 	"""CLASS::GuidedBackProp:
@@ -26,6 +28,9 @@ class GuidedBackProp(Method):
 		>>- 'vgg19'
 		>>- 'other'.
 		>- h5file {string} -- Path to the h5file, specify if option is 'other'.(default:{None}).
+		Raises:
+		---
+		>- NotAValidTensorError {Exception} -- If the layer specified is not a convolution layer.
 		Link:
 		---
 		>- http://arxiv.org/abs/1412.6806."""

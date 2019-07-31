@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+import numpy as np
+import keras.backend as K
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from .gradient import Gradient
-import numpy as np
-import keras.backend as K
 
 # -- SMOOTHGRAD METHOD -- #
 class SmoothGrad(Gradient):

@@ -1,14 +1,16 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+import PIL.Image as pilImage
+import numpy as np
+import keras.backend as K
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image,visualize_heatmap
 from ..utils.bases.layers import DConv2D,DInput,DFlatten,DActivation,DPooling,DDense,DBatch
 from ..utils.interfaces import Method
 from ..utils.exceptions import NotAValidTensorError, OptionNotSupported
-import PIL.Image as pilImage
-import numpy as np
-import keras.backend as K
 
 class Deconvolution(Method):
 	"""CLASS::Deconvolution:
@@ -20,6 +22,9 @@ class Deconvolution(Method):
 		---
 		>- model {keras.Model} -- Model to analyze.
 		>- layerName {string} -- The name of the layer to reconstruct its activation.
+		Raises:
+		---
+		>- NotAValidTensorError {Exception} -- If the layer specified can not be handled by Deconvolution.
 		Link:
 		---
 		>- http://arxiv.org/abs/1311.2901."""
@@ -61,7 +66,11 @@ class Deconvolution(Method):
 			>>- 'max'
 			Returns:
 			---
-			>- {np.array} -- Image representing the reconstruction of the activation."""
+			>- {np.array} -- Image representing the reconstruction of the activation.
+			Raises:
+			---
+			>- ValueError {Exception} -- If the output has wrong dimensions.
+			>- OptionNotSupported {Exception} -- If 'visMode' option chosed is not supported."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		if not 0 <= featVis <= self.numFilters

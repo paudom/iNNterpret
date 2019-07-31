@@ -1,10 +1,6 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.data import deprocess_image
-from ..utils.tensor import model_remove_softmax
-from ..utils.interfaces import Method
+# -- EXTERN IMPORT -- #
 from keras.preprocessing import image as kerasImage
 from scipy.ndimage.filters import gaussian_filter, median_filter
 from PIL import Image as pilImage
@@ -14,6 +10,12 @@ import imageio
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.data import deprocess_image
+from ..utils.tensor import model_remove_softmax
+from ..utils.interfaces import Method
 
 class ActMaximization(Method):
 	"""CLASS::ActMaximization:

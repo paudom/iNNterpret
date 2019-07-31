@@ -1,10 +1,6 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.data import deprocess_image
-from ..utils.interfaces import Method
-from ..utils.exceptions import NotAValidTensorError
+# -- EXTERN IMPORT -- #
 from keras.preprocessing import image as kerasImage
 from PIL import Image as pilImage
 import keras.backend as K
@@ -13,6 +9,12 @@ import imageio
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.data import deprocess_image
+from ..utils.interfaces import Method
+from ..utils.exceptions import NotAValidTensorError
 
 class FeatMaximization(Method):
 	"""CLASS::FeatMaximization:
@@ -26,6 +28,9 @@ class FeatMaximization(Method):
 		>- layerName {string} -- The name of the layer to analyze, it has to be a convolution layer.
 		>- featureMap {int} -- The feature map to visualize.
 		>- targetSize {int} -- The size of the resulting image (height = width).
+		Raises:
+		---
+		>- ValueError {Exception} -- If the 'featureMap' is wrong.
 		Link:
 		---
 		>- http://arxiv.org/abs/1312.6034."""

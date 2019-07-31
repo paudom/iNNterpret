@@ -1,13 +1,15 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+import numpy as np
+import os
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import get_image_list, load_image
 from ..utils.bases.metrics import Metrics, availableMetrics
 from ..utils.interfaces import Method
 from ..utils.exceptions import EmptyDirectoryError, OptionNotSupported
-import numpy as np
-import os
 
 class SDEModel(Method):
 	"""CLASS::SDEModel:
@@ -30,7 +32,7 @@ class SDEModel(Method):
 		self.data = {}
 		self.metric = Metrics()
 		if not os.path.isdir(directory):
-			raise NotADirectoryError('['+directory+'] is not a directory.')
+			raise NotADirectoryError('The directory "'+directory+'" is not a directory.')
 		imgFormat = input(vrb.set_msg('Select the extension of the images: '))
 		self.fileNames = get_image_list(directory, imgFormat)
 		if self.fileNames:
@@ -39,8 +41,8 @@ class SDEModel(Method):
 				self.data[img] = model.predict(imgArray)
 			vrb.print_msg('========== DONE ==========\n')
 		else:
-			raise EmptyDirectoryError('The directory '+
-				directory+' does not contain files with the ['+imgFormat+'] extension.')
+			raise EmptyDirectoryError('The directory "'+
+				directory+'" does not contain files with the ['+imgFormat+'] extension.')
 			
 
 	def interpret(self,fileName,metric,numK):

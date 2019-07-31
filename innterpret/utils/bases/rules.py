@@ -1,12 +1,14 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from ..interfaces import Rule
+# -- EXTERN IMPORT -- #
 from tensorflow.python.ops import nn_ops, gen_nn_ops
 import keras.backend as K
 import tensorflow as tf
 import copy as cp
 import numpy as np
+
+# -- IMPORT -- #
+from ..interfaces import Rule
 from ..exceptions import NotAValidTensorError
 
 # -- AVAILABLE RULES -- #

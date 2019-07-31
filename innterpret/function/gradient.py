@@ -1,12 +1,14 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+import numpy as np
+import keras.backend as K
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.interfaces import Method
 from ..utils.exceptions import NotAValidTensorError
-import numpy as np
-import keras.backend as K
 
 class Gradient(Method):
 	"""CLASS::Gradient:
@@ -17,7 +19,10 @@ class Gradient(Method):
 		Arguments:
 		---
 		>- model {keras.Models} -- Model to analyze.
-		>- layerName {string} -- The selected layer to visualize."""
+		>- layerName {string} -- The selected layer to visualize.
+		Raises:
+		---
+		>- NotAValidTensorError {Exception} -- If the layer specified is not a convolution layer."""
 	def __init__(self,model,layerName):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
