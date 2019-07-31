@@ -5,7 +5,7 @@ from .. import __verbose__ as vrb
 from ..utils.bases.metrics import Metrics, availableMetrics
 from ..utils.data import get_image_list, load_image
 from ..utils.interfaces import Method
-from ..utils.exceptions import EmptyDirectoryError,OptionNotSupported
+from ..utils.exceptions import EmptyDirectoryError, OptionNotSupported
 import numpy as np
 import os
 

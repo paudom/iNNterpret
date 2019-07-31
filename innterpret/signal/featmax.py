@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from .. import __verbose__ as vrb
 from ..utils.data import deprocess_image
 from ..utils.interfaces import Method
-from ..utils.exceptions import NotAConvLayerError
+from ..utils.exceptions import NotAValidTensorError
 from keras.preprocessing import image as kerasImage
 from PIL import Image as pilImage
 import keras.backend as K
@@ -36,7 +36,7 @@ class FeatMaximization(Method):
 		self.model = model
 		self.input = self.model.inputs[0]
 		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
-			raise NotAConvLayerError('The layer "'+layerName+'" is not a convolution layer')
+			raise NotAValidTensorError('The layer "'+layerName+'" is not a convolution layer')
 		self.layerName = layerName
 		self.layer = self.model.get_layer(self.layerName)
 		if not 0 <= featureMap <= self.layer.shape[-1]-1:

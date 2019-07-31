@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 
+# -- IMPORT -- #
+from .exceptions import InterfaceException
+
 # -- INTERFACES -- #
 class Rule(object):
 	"""INTERFACE::Rule:
@@ -11,8 +14,8 @@ class Rule(object):
 		---
 		>- METHOD::RUN"""
 	def __new__(cls,*args,**kwargs):
-		#if not hasattr(cls,'run'):
-			#raise NotImplementedError
+		if not hasattr(cls,'run'):
+			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "run".')
 		return super(Rule,cls).__new__(cls)
 
 class DeconvLayer(object):
@@ -26,10 +29,10 @@ class DeconvLayer(object):
 		>- METHOD::UP.
 		>- METHOD::DOWN."""
 	def __new__(cls,*args,**kwargs):
-		#if not hasattr(cls,'up'):
-			#raise NotImplementedError
-		#if not hasattr(cls,'down'):
-		   #raise NotImplementedError
+		if not hasattr(cls,'up'):
+			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "up".')
+		if not hasattr(cls,'down'):
+			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "down".')
 		return super(DeconvLayer,cls).__new__(cls)
 
 class Method(object):
@@ -42,6 +45,6 @@ class Method(object):
 		---
 		>- METHOD::INTERPRET."""
 	def __new__(cls,*args,**kwargs):
-		#if not hasattr(cls,'interpret'):
-			#raise NotImplementedError
+		if not hasattr(cls,'interpret'):
+			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "interpret".')
 		return super(Method,cls).__new__(cls)

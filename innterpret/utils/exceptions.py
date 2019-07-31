@@ -27,8 +27,8 @@ class EmptyDirectoryError(Exception):
         print(msg)
     sys.excepthook = myexcepthook
 
-class NotAConvLayerError(Exception):
-    """EXCEPTION::NotAConvLayerError:
+class NotAValidTensorError(Exception):
+    """EXCEPTION::NotAValidTensorError:
         ---
         Cause:
         ---
@@ -38,12 +38,23 @@ class NotAConvLayerError(Exception):
         print(msg)
     sys.excepthook = myexcepthook
 
-class LayerNotManagableError(Exception):
-    """EXCEPTION::LayerNotHandleableError:
+class InterfaceException(Exception):
+    """EXCEPTION::InterfaceException:
         ---
         Causes:
         ---
-        >- If the layer encounter can't be handle it."""
+        >- If the interface is not well implemented."""
+    def myexcepthook(dtype,value,tb):
+        msg = ''.join(traceback.format_exception(dtype,value,tb))
+        print(msg)
+    sys.excepthook = myexcepthook
+
+class H5FileCorruptedError(Exception):
+    """EXCEPTION::H5FileCorruptedError:
+        ---
+        Cause:
+        ---
+        >- If the h5 file containing model information is not correct."""
     def myexcepthook(dtype,value,tb):
         msg = ''.join(traceback.format_exception(dtype,value,tb))
         print(msg)

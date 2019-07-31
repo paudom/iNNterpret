@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.interfaces import Method
-from ..utils.exceptions import NotAConvLayerError
+from ..utils.exceptions import NotAValidTensorError
 import numpy as np
 import keras.backend as K
 
@@ -23,7 +23,7 @@ class Gradient(Method):
 		vrb.print_msg('--------------------------')
 		self.model = model
 		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
-			raise NotAConvLayerError('The layer "'+layerName+'" is not a convolutional layer.')
+			raise NotAValidTensorError('The layer "'+layerName+'" is not a convolutional layer.')
 		self.layerName = layerName
 		inputLayer = self.model.inputs[0]
 		outputLayer = self.model.get_layer(self.layerName)

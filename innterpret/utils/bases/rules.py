@@ -7,6 +7,7 @@ import keras.backend as K
 import tensorflow as tf
 import copy as cp
 import numpy as np
+from ..exceptions import NotAValidTensorError
 
 # -- AVAILABLE RULES -- #
 availableRules = {'ZPlus':0, 'ZAlpha':1}
@@ -42,6 +43,7 @@ class ZPlus(Rule):
 			>- {tensor} -- The relevance from the current layer.
 			Raises:
 			---
+			>- NotAValidTensorError {Exception} -- When the layer encountered is not valid.
 			"""
 		if self.type == 'Dense':
 			return self.run_dense(R,ignoreBias)
@@ -51,8 +53,8 @@ class ZPlus(Rule):
 			return self.run_conv(R,ignoreBias)
 		elif self.type == 'Flatten':
 			return self.run_flatten(R)
-		#else:
-		#	raise NotImplementedError
+		else:
+			raise NotAValidTensorError('The layer "'+self.type+'" encountered can be handled.')
 			
 	def run_dense(self,R,ignoreBias=False):
 		"""METHOD::RUN_DENSE:
@@ -167,7 +169,7 @@ class ZAlpha(Rule):
 			---
 			>- {tensor} -- The relevance from the current layer.
 			Raises:
-			---"""
+			--- NotAValidTensorError {Exception} -- When the layer encountered is not valid."""
 		if self.type == 'Dense':
 			return self.run_dense(R,ignoreBias)
 		elif self.type == 'MaxPooling2D':
@@ -176,8 +178,8 @@ class ZAlpha(Rule):
 			return self.run_conv(R,ignoreBias)
 		elif self.type == 'Flatten':
 			return self.run_flatten(R)
-		#else:
-		#	raise NotImplementedError
+		else:
+			raise NotAValidTensorError('The layer "'+self.type+'" encountered can be handled.')
 		
 	def run_dense(self,R,ignoreBias=False):
 		"""METHOD::RUN_DENSE:

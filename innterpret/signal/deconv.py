@@ -5,7 +5,7 @@ from .. import __verbose__ as vrb
 from ..utils.data import load_image,visualize_heatmap
 from ..utils.bases.layers import DConv2D,DInput,DFlatten,DActivation,DPooling,DDense,DBatch
 from ..utils.interfaces import Method
-from ..utils.exceptions import LayerNotManagableError, OptionNotSupported
+from ..utils.exceptions import NotAValidTensorError, OptionNotSupported
 import PIL.Image as pilImage
 import numpy as np
 import keras.backend as K
@@ -43,7 +43,7 @@ class Deconvolution(Method):
 			elif model.layers[i].__class__.__name__ == 'InputLayer':
 				self.deconvLayers.append(DInput(model.layers[i]))
 			else:
-				raise LayerNotManagableError('The layer ['+model.layers[i].name+'] can not be handled by "'+
+				raise NotAValidTensorError('The layer ['+model.layers[i].name+'] can not be handled by "'+
 												self.__class__.__name__+'" method.')
 			if self.layerName == model.layers[i].name:
 				break

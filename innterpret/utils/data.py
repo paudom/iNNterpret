@@ -23,8 +23,12 @@ def norm_img(img, interval=[0,1],dtype='float32'):
 		>- dtype {string} -- String indicating the type of the result type. (default:{'float32'})
 		Returns:
 		---
-		>- {np.array} -- The image normalized."""
-	#assert len(interval) == 2
+		>- {np.array} -- The image normalized.
+		Raises:
+		---
+		>- ValueError {Exception} -- If the interval does not contain two elements."""
+	if len(interval) != 2:
+		raise ValueError('The interval needs to be a list of two elements.')
 	magnitude = interval[1]-interval[0]
 	return (magnitude*(img-np.min(img)))/(np.ptp(img).astype(dtype)+K.epsilon())
 
@@ -47,7 +51,10 @@ def img_to_vector(img, linear=True):
 		>- linear {bool} -- falg to reshape manually (True) or us reshape. (default: {True}).
 		Returns:
 		---
-		>- {np.array} -- A vector of one dimension representing the image."""
+		>- {np.array} -- A vector of one dimension representing the image.
+		Raises:
+		---
+		>- ValueError {Exception} -- If the shape of the output vector is not correct."""
 	img = np.asarray(img, dtype='float32')
 	H,W,Z = img.shape
 	if linear:
@@ -57,7 +64,8 @@ def img_to_vector(img, linear=True):
 		vector = np.concatenate([R,G,B], axis=0)
 	else:
 		vector = img.reshape(H*W*Z,1)
-	#assert vector.shape[0]==H*W*Z, print_msg('Vector must be of size (%s,%s)' % (str(H*W*Z),str(1)),show=False,option='error')
+	if vector.shape[0] != H*W*Z:
+		raise ValueError('Vector must be of size ('+H*W*Z+',1).')
 	return vector,H,W
 
 def vector_to_img(array, height, width):
@@ -135,7 +143,10 @@ def reduce_channels(imgData,axis=-1,option='sum'):
 		>>- 'mean'
 		Returns:
 		---
-		>- {np.array} -- image data with just one channel."""
+		>- {np.array} -- image data with just one channel.
+		Raises:
+		---
+		>- OptionNotSupported {Exception} -- If the option introduced is not supported."""
 	if option == 'sum':
 		return imgData.sum(axis=axis)
 	elif option == 'mean':

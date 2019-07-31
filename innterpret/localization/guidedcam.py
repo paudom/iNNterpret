@@ -6,7 +6,7 @@ from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.tensor import load_model, load_vgg16, load_vgg19
 from ..utils.tensor import decode_predictions
 from ..utils.interfaces import Method
-from ..utils.exceptions import NotAConvLayerError
+from ..utils.exceptions import NotAValidTensorError
 from tensorflow.python.framework import ops
 from keras.applications.vgg16 import VGG16
 from PIL import Image as pilImage
@@ -40,7 +40,7 @@ class GuidedGradCAM(Method):
 		vrb.print_msg('--------------------------')
 		self.model = model
 		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
-			raise NotAConvLayerError('The layer "'+layerName+'" is not a convolution layer.')
+			raise NotAValidTensorError('The layer "'+layerName+'" is not a convolution layer.')
 		self.layerName = layerName
 		self.numClasses = self.model.outputs[0].get_shape()[1]-1
 		if 'GuidedBackProp' not in ops._gradient_registry._registry:

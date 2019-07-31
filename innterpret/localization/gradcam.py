@@ -5,7 +5,7 @@ from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.tensor import decode_predictions
 from ..utils.interfaces import Method
-from ..utils.exceptions import NotAConvLayerError
+from ..utils.exceptions import NotAValidTensorError
 from PIL import Image as pilImage
 import numpy as np
 import keras.backend as K
@@ -31,7 +31,7 @@ class GradCAM(Method):
 		vrb.print_msg('--------------------------\n')
 		self.model = model
 		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
-			raise NotAConvLayerError('The layer "'+layerName+'" is not a convolution layer.')
+			raise NotAValidTensorError('The layer "'+layerName+'" is not a convolution layer.')
 		self.layerName = layerName
 		self.numClasses = model.outputs[0].get_shape()[1]-1
 		vrb.print_msg('========== DONE ==========\n')
