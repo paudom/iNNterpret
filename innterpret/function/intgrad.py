@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+import numpy as np
+from PIL import Image, ImageEnhance
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
-from ..utils.data import load_image, visualize_heatmap
+from ..utils.data import load_image, process_image, visualize_heatmap
 from .gradient import Gradient
-import numpy as np
-from keras.preprocessing import image as kerasImage
-from PIL import Image, ImageEnhance
 
 class IntegratedGrad(Gradient):
 	"""CLASS::IntegratedGrad:
@@ -36,19 +37,16 @@ class IntegratedGrad(Gradient):
 			>- {np.array} -- Masked image indicating the pixels that change activations."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		self.rawData = load_image(fileName,preprocess=False)
+		self.rawData,_ = load_image(fileName,preprocess=True)
 		vrb.print_msg('Computing Baseline and Limit')
 		vrb.print_msg('--------------------------') 
-		self.__luminance_interpolation(self.rawData, 0.0, 1.0, 50)
-		imgData = kerasImage.img_to_array(self.rawData)
-		imgData = np.expand_dims(imgData,axis=0)
-		self.imgData = imgData
+		self.__luminance_interpolation(self.rawData, 0.0, 1.0, samples)
+		self.imgData = process_image(self.rawData)
 		fullPred = self.model.predict(self.imgData)
 		maxClass = np.argsort(fullPred)[0][-1:][::-1]
 		predictions = []
-		for k in range(50):
-			imgInput = kerasImage.img_to_array(self.imgArray[k])
-			imgInput = np.expand_dims(imgInput,axis=0)
+		for img in self.imgArray:
+			imgInput = process_image(img)
 			predictions.append(self.model.predict(imgInput)[0][maxClass][0])
 		maxBase = np.max(np.array(predictions))*0.9
 		minBase = np.max(np.array(predictions))*0.1
@@ -60,15 +58,13 @@ class IntegratedGrad(Gradient):
 		vrb.print_msg('Computing Integrated Gradients')
 		vrb.print_msg('--------------------------')
 		IntGrad = []
-		for k in range(samples):
-			imgInput = kerasImage.img_to_array(self.imgArray[k])
-			imgInput = np.expand_dims(imgInput,axis=0)
+		for img in self.imgArray:
+			imgInput = process_image(img)
 			gradVal = self.gradient([imgInput])[0]
 			IntGrad.append(gradVal)
-		heatMap = np.mean(np.array(IntGrad),axis=0)
-		heatMap = np.sum(heatMap[0],axis=-1)
-		heatMap[heatMap < np.mean(heatMap)] = 0
-		self.heatMap = heatMap
+		self.heatMap = np.mean(np.array(IntGrad),axis=0)
+		self.heatMap = np.sum(self.heatMap[0],axis=-1)
+		self.heatMap[self.heatMap < np.mean(self.heatMap)] = 0
 		vrb.print_msg('========== DONE ==========\n')
 		return self.heatMap
 
@@ -87,8 +83,8 @@ class IntegratedGrad(Gradient):
 		self.imgArray = []
 		self.interY = np.linspace(a,b,num=samples)
 		self.lum = ImageEnhance.Brightness(imgLum)
-		for k in range(samples):
-			self.imgArray.append(self.lum.enhance(self.interY[k]))
+		for value in self.interY:
+			self.imgArray.append(self.lum.enhance(value))
 
 	def visualize(self,savePath):
 		"""METHOD::VISUALIZE:
@@ -108,3 +104,6 @@ class IntegratedGrad(Gradient):
 		IntGradImg = kerasImage.array_to_img(IntGradImg[0])
 		visualize_heatmap(self.rawData,IntGradImg,self.__class__.__name__,'bone',savePath)
 		vrb.print_msg('========== DONE ==========\n')
+		
+	def __repr__(self):
+		return super().__repr__()+'Integrated Gradients>'

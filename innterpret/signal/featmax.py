@@ -1,9 +1,6 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.data import deprocess_image
-from ..utils.interfaces import Method
+# -- EXTERN IMPORT -- #
 from keras.preprocessing import image as kerasImage
 from PIL import Image as pilImage
 import keras.backend as K
@@ -12,6 +9,12 @@ import imageio
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.data import deprocess_image
+from ..utils.interfaces import Method
+from ..utils.exceptions import TensorNotValidException
 
 class FeatMaximization(Method):
 	"""CLASS::FeatMaximization:
@@ -22,9 +25,13 @@ class FeatMaximization(Method):
 		Arguments:
 		---
 		>- model {keras.Model} -- Model to analyze.
-		>- layerName {string} -- The name of the layer to analyze.
+		>- layerName {string} -- The name of the layer to analyze, it has to be a convolution layer.
 		>- featureMap {int} -- The feature map to visualize.
 		>- targetSize {int} -- The size of the resulting image (height = width).
+		Raises:
+		---
+		>- ValueError {Exception} -- If the 'featureMap' is wrong.
+		>- TensorNotValidException {Exception} -- If the layer specified is not a convolution layer. 
 		Link:
 		---
 		>- http://arxiv.org/abs/1312.6034."""
@@ -33,16 +40,18 @@ class FeatMaximization(Method):
 		vrb.print_msg('--------------------------\n')
 		self.factor = 1.2; self.upSteps = 9
 		self.model = model
-		self.imgInput = self.model.inputs[0]
+		self.input = self.model.inputs[0]
+		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
+			raise TensorNotValidException('The layer "'+layerName+'" is not a convolution layer')
 		self.layerName = layerName
-		#assert self.model.get_layer(self.layerName).__class__.__name__ == 'Conv2D'
 		self.layer = self.model.get_layer(self.layerName)
-		#numFilters = self.layer.shape[-1]
-		#assert 0 <= featureMap <= numFilters-1
+		if not 0 <= featureMap <= self.layer.shape[-1]-1:
+			raise ValueError('The feature Map needs to be between the interval [0,'+
+								self.layer.shape[-1]-1+'].')
 		loss = K.mean(self.layer[:,:,:,featureMap])
-		grads = K.gradients(loss,self.imgInput)[0]
+		grads = K.gradients(loss,self.input)[0]
 		grads /= K.sqrt(K.mean(K.square(grads)))+K.epsilon()
-		self.gradient = K.function([self.imgInput],[loss,grads])
+		self.gradient = K.function([self.input],[loss,grads])
 		self.targetSize = targetSize
 		self.size = int(self.targetSize/(self.factor**self.upSteps))
 		self.imgData = np.random.normal(0,10,(1,self.size,self.size,3))
@@ -167,3 +176,6 @@ class FeatMaximization(Method):
 		imgDraw = kerasImage.array_to_img(draw,scale=False)
 		imgDraw.save(savePath,dpi=(250,250))
 		vrb.print_msg('========== DONE ==========\n')
+	
+	def __repr__(self):
+		return super().__repr__()+'Feature Map Maximization>'

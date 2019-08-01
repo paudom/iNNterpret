@@ -1,14 +1,17 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.tensor import model_remove_softmax, get_model_parameters, print_tensor_shape
-from ..utils.bases.rules import ZPlus, ZAlpha
-from ..utils.data import load_image, reduce_channels, deprocess_image, visualize_heatmap
-from ..utils.interfaces import Method
+# -- EXTERN IMPORTS -- #
 from keras.models import Model
 import keras.backend as K
 import numpy as np
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.tensor import model_remove_softmax, get_model_parameters, print_tensor_shape
+from ..utils.bases.rules import ZPlus, ZAlpha, availableRules
+from ..utils.data import load_image, reduce_channels, deprocess_image, visualize_heatmap
+from ..utils.interfaces import Method
+from ..utils.exceptions import OptionNotSupported
 
 class LRPModel(Method):
 	"""CLASS::LRPModel:
@@ -19,21 +22,27 @@ class LRPModel(Method):
 		Arguments:
 		---
 		>- model {keras.Model} -- Model to analyze.
+		Raises:
+		---
+		>- OptionNotSupported {Exception} -- When the rule option is not available.
+		>- ValueError {Exception} -- If the value introduced for alpha is not correct.
 		Link:
 		---
 		>- http://arxiv.org/abs/1706.07979."""
 	def __init__(self,model):
 		vrb.print_msg('self.__class__.__name__'+' Initialization...')
 		vrb.print_msg('--------------------------')
+		optionString = ''.join(option+':('+str(k)+') - ' for option,k in availableRules.items())
+		self.ruleOption = int(input(vrb.set_msg(optionString[:-2])))
+		if self.ruleOption not in list(availableRules.values()):
+			raise OptionNotSupported('The option "'+str(self.ruleOption)+'" is not available.')
+		if self.ruleOption == 1:
+			self.alpha = int(input(vrb.set_msg('Select a Value for Alpha: ')))
+			if self.alpha < 1:
+				raise ValueError('Alpha value needs to be greater than 1.')
 		reluModel = model_remove_softmax(model)
 		_,_,activations,_ = get_model_parameters(model) 
 		self.model = Model(inputs=reluModel.input, outputs=activations)
-		if vrb.flag:
-			self.model.summary()
-		self.optionRule = input(vrb.set_msg('(ZPlus)-(ZAlpha): '))
-		if self.optionRule == 'ZAlpha':
-			self.alpha = int(input(vrb.set_msg('Select a Value for Alpha: ')))
-			#assert self.alpha >= 1
 		self.numLayers = len(self.model.layers)
 		vrb.print_msg('========== DONE ==========\n')
 
@@ -57,15 +66,13 @@ class LRPModel(Method):
 			self.outputR[-1] = np.zeros(self.outputR[-1].shape, dtype='float32')
 			self.outputR[-1][:,clsNeuron] = maxAct
 		# For each layer backwards, define the Rules.
-		for currLayer,k in zip(reversed(self.model.layers),range(self.numLayers-2,-1,-1)):
+		for k,currLayer in zip(range(self.numLayers-2,-1,-1),reversed(self.model.layers)):
 			nextLayer = currLayer._inbound_nodes[0].inbound_layers[0]
 			activation = self.outputR[k-1] if (k-1!=-1) else imgData
-			if self.optionRule == 'ZPlus':
+			if self.ruleOption == '0':
 				layerRules.append(ZPlus(currLayer,activation))
-			elif self.optionRule == 'ZAlpha':
+			else:
 				layerRules.append(ZAlpha(currLayer,activation,self.alpha))
-			#else:
-				#assert False, 'This Rule Option is not supported'
 			vrb.print_msg('<><><><><>')
 			vrb.print_msg('Weights From: ['+currLayer.name+']')
 			vrb.print_msg('Activations From: ['+nextLayer.name+']')
@@ -141,8 +148,7 @@ class LRPModel(Method):
 			>- {np.array} -- The resulting relevance array."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		self.rawData = load_image(fileName,preprocess=False)
-		imgData = load_image(fileName)
+		self.rawData,imgData = load_image(fileName,preprocess=True)
 		self.__define_rules(imgData,oneHot=oneHot)
 		self.__run_rules()
 		if layerName is None:
@@ -151,3 +157,6 @@ class LRPModel(Method):
 			self.relevance = sess.run(self.R[layerName])
 		vrb.print_msg('========== DONE ==========\n')
 		return self.relevance
+
+	def __repr__(self):
+		return super().__repr__()+'Layer-Wise Relevance Propagation (LRP)>'

@@ -1,14 +1,17 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+from tensorflow.python.framework import ops
+from keras.applications.vgg16 import VGG16
+import tensorflow as tf
+import keras.backend as K
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.tensor import load_vgg16, load_vgg19, load_model
 from ..utils.interfaces import Method
-from tensorflow.python.framework import ops
-from keras.applications.vgg16 import VGG16
-import tensorflow as tf
-import keras.backend as K
+from ..utils.exceptions import TensorNotValidException
 
 class GuidedBackProp(Method):
 	"""CLASS::GuidedBackProp:
@@ -24,14 +27,18 @@ class GuidedBackProp(Method):
 		>>- 'vgg16'
 		>>- 'vgg19'
 		>>- 'other'.
-		>- h5file {strin} -- Path to the h5file, specify if option is 'other'.(default:{None}).
+		>- h5file {string} -- Path to the h5file, specify if option is 'other'.(default:{None}).
+		Raises:
+		---
+		>- TensorNotValidException {Exception} -- If the layer specified is not a convolution layer.
 		Link:
 		---
 		>- http://arxiv.org/abs/1412.6806."""
 	def __init__(self,model,layerName,option='vgg16',h5file=None):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
-		#assert self.model.get_layer(self.layerName).__class__.__name__ == 'Conv2D'
+		if model.get_layer(layerName).__class__.__name__ != 'Conv2D':
+			raise TensorNotValidException('The layer "'+layerName+'" is not a convolution layer.')
 		if 'GuidedBackProp' not in ops._gradient_registry._registry:
 			@ops.RegisterGradient("GuidedBackProp")
 			def _GuidedBackProp(op, grad):
@@ -67,10 +74,9 @@ class GuidedBackProp(Method):
 			>- {np.array} -- The saliency image."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		self.rawData = load_image(fileName,preprocess=False)
-		imgInput = load_image(fileName)
-		saliency = self.gradient([imgInput])
-		self.saliency = saliency[0][0,:,:,:]
+		self.rawData, imgInput = load_image(fileName,preprocess=True)
+		self.saliency = self.gradient([imgInput])
+		self.saliency = self.saliency[0][0,:,:,:]
 		vrb.print_msg('========== DONE ==========\n')
 		return self.saliency
 
@@ -88,3 +94,6 @@ class GuidedBackProp(Method):
 		result = deprocess_image(self.saliency.copy())
 		visualize_heatmap(self.rawData,result,self.__class__.__name__,'viridis',savePath)
 		vrb.print_msg('========== DONE ==========\n')
+
+	def __repr__(self):
+		return super().__repr__()+'Guided Back Propagation>'

@@ -1,13 +1,20 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from ..interfaces import Rule
+# -- EXTERN IMPORT -- #
 from tensorflow.python.ops import nn_ops, gen_nn_ops
 import keras.backend as K
 import tensorflow as tf
 import copy as cp
 import numpy as np
 
+# -- IMPORT -- #
+from ..interfaces import Rule
+from ..exceptions import TensorNotValidException
+
+# -- AVAILABLE RULES -- #
+availableRules = {'ZPlus':0, 'ZAlpha':1}
+
+# -- TYPES OF RULES -- #
 class ZPlus(Rule):
 	"""CLASS::ZPlus:
 		---
@@ -38,6 +45,7 @@ class ZPlus(Rule):
 			>- {tensor} -- The relevance from the current layer.
 			Raises:
 			---
+			>- TensorNotValidException {Exception} -- When the layer encountered is not valid.
 			"""
 		if self.type == 'Dense':
 			return self.run_dense(R,ignoreBias)
@@ -47,8 +55,8 @@ class ZPlus(Rule):
 			return self.run_conv(R,ignoreBias)
 		elif self.type == 'Flatten':
 			return self.run_flatten(R)
-		#else:
-		#	raise NotImplementedError
+		else:
+			raise TensorNotValidException('The layer "'+self.type+'" encountered can be handled.')
 			
 	def run_dense(self,R,ignoreBias=False):
 		"""METHOD::RUN_DENSE:
@@ -131,6 +139,9 @@ class ZPlus(Rule):
 										  S,strdSize,self.layer.padding.upper())
 		return K.clip(self.act*C,self.minValue,self.maxValue)
 
+	def __repr__(self):
+		return super().__repr__()+self.__class__.__name__+':Layer:'+self.name+'>'
+
 class ZAlpha(Rule):
 	"""CLASS::ZAlpha:
 		---
@@ -163,7 +174,7 @@ class ZAlpha(Rule):
 			---
 			>- {tensor} -- The relevance from the current layer.
 			Raises:
-			---"""
+			--- TensorNotValidException {Exception} -- When the layer encountered is not valid."""
 		if self.type == 'Dense':
 			return self.run_dense(R,ignoreBias)
 		elif self.type == 'MaxPooling2D':
@@ -172,8 +183,8 @@ class ZAlpha(Rule):
 			return self.run_conv(R,ignoreBias)
 		elif self.type == 'Flatten':
 			return self.run_flatten(R)
-		#else:
-		#	raise NotImplementedError
+		else:
+			raise TensorNotValidException('The layer "'+self.type+'" encountered can be handled.')
 		
 	def run_dense(self,R,ignoreBias=False):
 		"""METHOD::RUN_DENSE:
@@ -268,3 +279,6 @@ class ZAlpha(Rule):
 										  Sb,strdSize,self.layer.padding.upper())
 		Rn = self.act*(self.alpha*Ca+self.beta*Cb)
 		return K.clip(Rn,self.minValue,self.maxValue)
+	
+	def __repr__(self):
+		return super().__repr__()+self.__class__.__name__+':Layer:'+self.name+'>'

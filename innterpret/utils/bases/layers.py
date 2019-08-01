@@ -1,12 +1,14 @@
 from __future__ import absolute_import
 
-# --  IMPORT -- #
-from ..interfaces import DeconvLayer
+# --  EXTERN IMPORT -- #
 from keras.layers import Input, InputLayer, Dense, Conv2D, MaxPooling2D, Flatten, Activation
 import tensorflow as tf
 import keras.backend as K
 import numpy as np
 import math
+
+# -- IMPORT -- #
+from ..interfaces import DeconvLayer
 
 class DConv2D(DeconvLayer):
 	"""CLASS::DConv2D:
@@ -66,6 +68,9 @@ class DConv2D(DeconvLayer):
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
 
+	def __repr__(self):
+		return super().__repr__()+'2D Deconvolution Layer:'+self.layer.name+'>'
+
 class DActivation(DeconvLayer):
 	"""CLASS::DActivation:
 		---
@@ -111,6 +116,10 @@ class DActivation(DeconvLayer):
 		self.downData = np.squeeze(self.downData,axis=0)
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
+	
+	def __repr__(self):
+		return super().__repr__()+'Deconvolution Activation:Layer'+
+					self.layer.name+'Type:'+self.activation.__name__+'>'
 
 class DInput(DeconvLayer):
 	"""CLASS::DInput:
@@ -149,6 +158,9 @@ class DInput(DeconvLayer):
 		data = np.expand_dims(data,axis=0)
 		self.downData = data
 		return self.downData
+	
+	def __repr__(self):
+		return super().__repr__()+'Input Deconvolution Layer:'self.layer.name+'>'
 
 class DDense(DeconvLayer):
 	"""CLASS::DDense: 
@@ -205,6 +217,9 @@ class DDense(DeconvLayer):
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
 
+	def __repr__(self):
+		return super().__repr__()+'Dense Deconvolution Layer:'self.layer.name+'>'
+
 class DFlatten(DeconvLayer):
 	"""CLASS::DFlatten:
 		---
@@ -242,10 +257,17 @@ class DFlatten(DeconvLayer):
 			>- data: data recollected from the previous layer.
 			>- learn: flag to determine if training is needed (default: {0})
 			Returns:
-			>- {tensor} -- The reconstructed data."""
+			>- {tensor} -- The reconstructed data.
+			Raises:
+			---
+			>- ValueError {Exeption} -- If the shape of the data is not correct."""
 		newShape = [data.shape[0]] + list(self.shape)
-		#assert np.prod(self.shape) == np.prod(data.shape[1:])
+		if np.prod(self.shape) != np.prod(data.shape[1:0]):
+			raise ValueError('The shape of the data is invalid.')
 		self.downData = np.reshape(data, newShape)
+	
+	def __repr__(self):
+		return super().__repr__()+'Flatten Deconvolution Layer:'self.layer.name+'>'
 
 class DBatch(DeconvLayer):
 	"""CLASS::DBatch: 
@@ -293,6 +315,9 @@ class DBatch(DeconvLayer):
 		self.downData = np.squeeze(self.downData,axis=0)
 		self.downData = np.expand_dims(self.downData,axis=0)
 		return self.downData
+	
+	def __repr__(self):
+		return super().__repr__()+'Barch Normalization Deconvolution Layer:'self.layer.name+'>'
 
 class DPooling(DeconvLayer):
 	"""CLASS::DPooling:
@@ -384,3 +409,6 @@ class DPooling(DeconvLayer):
 		unpooled = out * switch
 		unpooled = np.expand_dims(unpooled,axis=0)
 		return unpooled
+	
+	def __repr__(self):
+		return super().__repr__()+'Pooling Deconvolution Layer:'self.layer.name+'>'

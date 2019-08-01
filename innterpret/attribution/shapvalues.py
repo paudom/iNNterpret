@@ -14,6 +14,7 @@ class SHAPValues():
 		>- https://arxiv.org/abs/1705.07874."""
 	def __init__(self):
 		raise NotImplementedError
+
 	def interpret(self):
 		"""METHOD::INTERPRET:
 			---
@@ -21,4 +22,7 @@ class SHAPValues():
 			---
 			Returns:
 			---"""
-		raise NotImplementedError
+		pass
+	
+	def __repr__(self):
+		return super().__repr__()+self.__class__.__name__+'>'

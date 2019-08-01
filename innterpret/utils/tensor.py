@@ -1,13 +1,15 @@
-# -- TENSOR UTILITIES -- #
 from __future__ import absolute_import
 
-# -- IMPORTS -- #
+# -- EXTERN IMPORT -- #
 import keras.backend as K
 import numpy as np
 import keras
 import json 
 import h5py 
-import os 
+import os
+
+# -- IMPORT -- #
+from .exceptions import H5FileCorruptedError, TensorNotValidException
 
 def load_vgg16(trained=True):
 	"""FUNCTION::LOAD_VGG16: Load pretrained VGG16 model from keras.
@@ -45,17 +47,21 @@ def load_model(h5file):
 		>- h5file {string} -- Path to the h5 file containing the model.
 		Returns:
 		---
-		>- {model} -- The model."""
-	cwd = os.getcwd()
+		>- {model} -- The model.
+		Raises: 
+		---
+		>- FileNotFoundError {Exception} -- If the file specified does not exists.
+		>- H5FileCorruptedError {Exception} -- If the h5file is corrupted and can not be readed."""
+	if not os.path.isfile(h5file):
+		raise FileNotFoundError('The file "'+h5file+'" was not found')
 	try:
-		model = keras.models.load_model(cwd+os.sep+h5file)
+		model = keras.models.load_model(h5file)
 	except Exception:
-		pass
-	#	assert False
+		raise H5FileCorruptedError('Error trying to read "'+h5file+'". Try to execute \
+									"innterpret.utils.tensor.fix_layer0()" if your model \
+									has an "InputLayer". Then try again to load the model.')
 	else:
 		return model
-			#print_msg('Error while trying to load model from '+h5file+'.Try to execute '
-			#'innterpret.utils.tensor_utils.fix_layer0()" If your model has an "InputLayer".',show=False,option='error')
 
 def decode_predictions(predictions,top=5):
 	"""FUNCTION::DECODE_PREDICTIONS: returns a list with the top predictions.
@@ -112,8 +118,12 @@ def model_remove_softmax(model):
 		>- model {keras.Model} -- A model you want to modify.
 		Returns:
 		---
-		>- {keras.Model} -- Returns a model without the softmax activation at the end."""
-	#assert model.layers[-1].activation.__name__ == keras.activations.softmax.__name__
+		>- {keras.Model} -- Returns a model without the softmax activation at the end.
+		Raises:
+		---
+		>- TensorNotValidException {Exception} -- If the model has not a softmax activation."""
+	if model.layers[-1].activation.__name__ != keras.activations.softmax.__name__:
+		raise TensorNotValidException('The model introduced has not a softmax activation.')
 	outShape = model.outputs[0].shape[-1]
 	outName = model.layers[-1].name
 	weights = model.layers[-1].get_weights()
@@ -146,7 +156,10 @@ def get_model_parameters(model):
 		>- model {keras.Model} -- The model to analyze.
 		Returns:
 		---
-		>- {list[string]},{list[np.array]},{list[tensor]},{list[tensor]} -- layer Names, Weights, Outputs and Activations."""
+		>- {list[string]} -- layer Names
+		>- {list[np.array]} -- layer Weights
+		>- {list[tensor]} -- layer Outputs
+		>- {list[tensor]} -- layer Activations."""
 	layerNames = []; layerOutputs = []; layerWeights = []; layerAct = []
 	for layer in model.layers:
 		layerNames.append(layer.name)
@@ -155,5 +168,23 @@ def get_model_parameters(model):
 		layerWeights.append(layer.get_weights)
 	return layerNames,layerWeights,layerOutputs,layerAct
 
+def get_conv_layers(model):
+	"""FUNCTION::GET_CONV_LAYERS:
+		---
+		Arguments:
+		---
+		>- model {keras.Models} -- A model to get the parameters.
+		Returns:
+		---
+		>- {list[string]} -- layer Names.
+		>- {list[tensor]} -- layer Outputs.
+		>- {list[tensor]} -- layer Weights."""
+	layerNames = []; layerOutputs = []; layerWeights = []
+	for layer in model.layers:
+		if layer.__class__.__name__ == 'Conv2D':
+			layerNames.append(layer.name)
+			layerOutputs.append(layer.output)
+			layerWeights.append(layer.get_weights)
+	return layerNames,layerOutputs,layerWeights
 
 

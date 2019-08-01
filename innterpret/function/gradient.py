@@ -1,11 +1,14 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+import numpy as np
+import keras.backend as K
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from ..utils.interfaces import Method
-import numpy as np
-import keras.backend as K
+from ..utils.exceptions import TensorNotValidException
 
 class Gradient(Method):
 	"""CLASS::Gradient:
@@ -16,17 +19,21 @@ class Gradient(Method):
 		Arguments:
 		---
 		>- model {keras.Models} -- Model to analyze.
-		>- layerName {string} -- The selected layer to visualize."""
+		>- layerName {string} -- The selected layer to visualize.
+		Raises:
+		---
+		>- TensorNotValidException {Exception} -- If the layer specified is not a convolution layer."""
 	def __init__(self,model,layerName):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
 		self.model = model
+		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
+			raise TensorNotValidException('The layer "'+layerName+'" is not a convolutional layer.')
 		self.layerName = layerName
-		#assert self.model.get_layer(self.layerName).__class__.__name__ == 'Conv2D'
-		inputData = self.model.inputs[0]
+		inputLayer = self.model.inputs[0]
 		outputLayer = self.model.get_layer(self.layerName)
 		loss = K.mean(outputLayer.output)
-		self.gradient = K.function([inputData], [K.gradients(loss, inputData)[0]])
+		self.gradient = K.function([inputLayer], [K.gradients(loss, inputLayer)[0]])
 		vrb.print_msg('========== DONE ==========\n')
 
 	def execute(self,fileName):
@@ -40,12 +47,10 @@ class Gradient(Method):
 			>- {np.array} -- The saliency of the image."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		self.rawData = load_image(fileName,preprocess=False)
-		imgData = load_image(fileName)
+		self.rawData,imgData = load_image(fileName,preprocess=True)
 		gradImg = self.gradient([imgData])
-		heatMap = np.sum(gradImg[0],axis=-1)
-		heatMap[heatMap < np.mean(heatMap)] = 0
-		self.heatMap = heatMap
+		self.heatMap = np.sum(gradImg[0],axis=-1)
+		self.heatMap[self.heatMap < np.mean(heatMap)] = 0
 		vrb.print_msg('========== DONE ==========\n')
 		return self.heatMap
 
@@ -64,3 +69,6 @@ class Gradient(Method):
 		heatMap = deprocess_image(self.heatMap.copy())
 		visualize_heatmap(self.rawData,heatMap,self.__class__.__name__,cmap,savePath)
 		vrb.print_msg('========== DONE ==========\n')
+
+	def __repr__(self):
+		return super().__repr__()+self.__class__.__name__+'>'

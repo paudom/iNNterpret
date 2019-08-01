@@ -24,4 +24,7 @@ class PatternAttribution(Method):
 			---
 			Returns:
 			---"""
-		raise NotImplementedError
+		pass
+		
+	def __repr__(self):
+		return super().__repr__()+self.__class__.__name__+'>'

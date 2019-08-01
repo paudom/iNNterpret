@@ -4,6 +4,9 @@ from __future__ import absolute_import
 import math
 import numpy as np
 
+# -- AVAILABLE METRICS  -- #
+availableMetrics = ['euclidean','manhattan','minkowski','cosine','jaccard']
+
 # -- DISTANCE METRICS -- #
 class Metrics():
 	"""CLASS::Metrics:
@@ -47,18 +50,6 @@ class Metrics():
 			---
 			>- {np.array} -- The minkowski distance between the two arrays."""
 		return self.__nth_root(np.sum(np.power(np.abs(np.subtract(x,y)),pVal),axis=-1),pVal)
-
-	def __nth_root(self,value,nRoot):
-		"""METHOD::__NTH_ROOT:
-			---
-			Arguments:
-			---
-			>- value {np.array} -- array containing the values to root.
-			>- nRoot {int} -- root number.
-			Returns:
-			---
-			>- {np.array} -- The nth_root of a array"""
-		return np.round(value**(1/float(nRoot)))
 	
 	def cosine_distance(self,x,y):
 		"""METHOD::COSINE_DISTANCE:
@@ -86,3 +77,18 @@ class Metrics():
 		x = np.asarray(x, np.bool) 
 		y = np.asarray(y, np.bool) 
 		return np.double(np.bitwise_and(x, y).sum())/np.double(np.bitwise_or(x, y).sum())
+	
+	def __nth_root(self,value,nRoot):
+		"""METHOD::__NTH_ROOT:
+			---
+			Arguments:
+			---
+			>- value {np.array} -- array containing the values to root.
+			>- nRoot {int} -- root number.
+			Returns:
+			---
+			>- {np.array} -- The nth_root of a array"""
+		return np.round(value**(1/float(nRoot)))
+
+	def __repr__(self):
+		return '<class::Metrics -- Distance Computation>'

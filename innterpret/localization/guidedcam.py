@@ -1,11 +1,6 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.data import load_image, deprocess_image, visualize_heatmap
-from ..utils.tensor import load_model, load_vgg16, load_vgg19
-from ..utils.tensor import decode_predictions
-from ..utils.interfaces import Method
+# -- EXTERN IMPORT -- #
 from tensorflow.python.framework import ops
 from keras.applications.vgg16 import VGG16
 from PIL import Image as pilImage
@@ -15,6 +10,14 @@ import tensorflow as tf
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.data import load_image, deprocess_image, visualize_heatmap
+from ..utils.tensor import load_model, load_vgg16, load_vgg19
+from ..utils.tensor import decode_predictions
+from ..utils.interfaces import Method
+from ..utils.exceptions import TensorNotValidException
 
 class GuidedGradCAM(Method):
 	"""CLASS::GuidedGradCAM:
@@ -31,6 +34,9 @@ class GuidedGradCAM(Method):
 		>>- 'vgg19'
 		>>- 'other'.
 		>- h5file {strin} -- Path to the h5file, specify if option is 'other'.(default:{None}).
+		Raises:
+		---
+		>- TensorNotValidException {Exception} -- If the layer specified is not a convolution layer.
 		Link:
 		---
 		>- http://arxiv.org/abs/1610.02391."""
@@ -38,8 +44,9 @@ class GuidedGradCAM(Method):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
 		self.model = model
+		if self.model.get_layer(layerName).__class__.__name__ != 'Conv2D':
+			raise TensorNotValidException('The layer "'+layerName+'" is not a convolution layer.')
 		self.layerName = layerName
-		#assert self.model.get_layer(self.layerName).__class__.__name__ == 'Conv2D'
 		self.numClasses = self.model.outputs[0].get_shape()[1]-1
 		if 'GuidedBackProp' not in ops._gradient_registry._registry:
 			@ops.RegisterGradient("GuidedBackProp")
@@ -53,16 +60,15 @@ class GuidedGradCAM(Method):
 				if layer.activation.__name__ == 'relu':
 					layer.activation = tf.nn.relu
 			if option == 'vgg19':
-				guidedModel = load_vgg19()
+				self.guidedModel = load_vgg19()
 			elif option == 'vgg16':
-				guidedModel = load_vgg16()
+				self.guidedModel = load_vgg16()
 			else:
-				guidedModel = load_model(h5file)
-			modelInput = guidedModel.input
-			layerOutput = guidedModel.get_layer(layerName).output
+				self.guidedModel = load_model(h5file)
+			modelInput = self.guidedModel.input
+			layerOutput = self.guidedModel.get_layer(layerName).output
 			argument = K.gradients(layerOutput,modelInput)[0]  
 			self.gradient = K.function([modelInput],[argument])
-			self.guidedModel = guidedModel
 		vrb.print_msg('========== DONE ==========\n')
 
 	def interpret(self,fileName,topCls=5,negGrad=False):
@@ -75,30 +81,34 @@ class GuidedGradCAM(Method):
 			>- negGrad {bool} -- Flag to determine how the gradients are computed. (default:{False}).
 			Returns:
 			---
-			>- {np.array} -- A heat map representing the areas where the model is focussing."""
+			>- {np.array} -- A heat map representing the areas where the model is focussing.
+			Raises:
+			---
+			>- ValueError {Exception} -- If the selected class is not valid."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		self.rawData = load_image(fileName,preprocess=False)
-		imgInput = load_image(fileName)
+		self.rawData,imgInput = load_image(fileName,preprocess=True)
 		decoded = decode_predictions(self.model.predict(imgInput),top=topCls)
 		vrb.print_msg('Predicted classes: '+str(decoded))
-		clSel = int(input(vrb.set_msg('Select the class to explain (0-'+str(self.numClasses)+'): ')))
-		clScore = self.model.output[0, clSel]
+		selClass = int(input(vrb.set_msg('Select the class to explain (0-'+str(self.numClasses)+'): ')))
+		if not 0 <= selClass <= self.numClasses:
+			raise ValueError('The class selected is invalid. It has to be between [0,'+
+								self.numClasses+'].')
+		clScore = self.model.output[0, selClass]
 		convOutput = self.model.get_layer(self.layerName).output
 		grads = K.gradients(clScore, convOutput)[0]
 		if negGrad:
-			vrb.print_msg('Negative Explanation')
+			vrb.print_msg('Setting Negative Explanation.')
 			grads = -grads
 		vrb.print_msg('Computing HeatMap')
 		vrb.print_msg('--------------------------')
 		self.camGrad = K.function([self.model.input],[convOutput, grads])
 		output, gradsVal = self.camGrad([imgInput])
-		output, gradsVal = output[0, :], gradsVal[0, :, :, :]
-		weights = np.mean(gradsVal,axis=(0,1))
-		cam = np.dot(output,weights)
-		cam = np.asarray(pilImage.fromarray(cam).resize((224,224),pilImage.BILINEAR),dtype='float32')
-		cam = np.maximum(cam, K.epsilon())
-		self.cam = cam/cam.max()
+		weights = np.mean(gradsVal[0, :, :, :],axis=(0,1))
+		self.cam = np.dot(output[0, :],weights)
+		self.cam = np.asarray(pilImage.fromarray(self.cam).resize((224,224),pilImage.BILINEAR),dtype='float32')
+		self.cam = np.maximum(self.cam, K.epsilon())
+		self.cam = self.cam/self.cam.max()
 		vrb.print_msg('Computing Guided')
 		vrb.print_msg('--------------------------')
 		saliency = self.gradient([imgInput])
@@ -123,3 +133,6 @@ class GuidedGradCAM(Method):
 		result = deprocess_image(self.guidedCAM.copy())
 		visualize_heatmap(self.rawData,result,self.__class__.__name__,'viridis',savePath)
 		vrb.print_msg('========== DONE ==========\n')
+
+	def __repr__(self):
+		return super().__repr__()+'Guided GradCAM (Class Activation Map)>'

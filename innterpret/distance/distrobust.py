@@ -1,12 +1,15 @@
 from __future__ import absolute_import
 
-# -- IMPORT -- #
-from .. import __verbose__ as vrb
-from ..utils.bases.metrics import Metrics
-from ..utils.data import get_image_list, load_image
-from ..utils.interfaces import Method
+# -- EXTERN IMPORT -- #
 import numpy as np
 import os
+
+# -- IMPORT -- #
+from .. import __verbose__ as vrb
+from ..utils.bases.metrics import Metrics, availableMetrics
+from ..utils.data import get_image_list, load_image
+from ..utils.interfaces import Method
+from ..utils.exceptions import EmptyDirectoryError, OptionNotSupported
 
 class DistRobust(Method):
 	"""CLASS::DistRobust:
@@ -18,24 +21,31 @@ class DistRobust(Method):
 		---
 		>- model {keras.Model} -- Model to analyze.
 		>- classOneDir {string} -- Path containing the images of a certain class.
-		>- classTwoDir {string} -- Path containing the images of another class. """
+		>- classTwoDir {string} -- Path containing the images of another class.
+		Raises:
+		---
+		>- NotADirectoryError {Exception} -- If the directories are indeed not directories.
+		>- EmptyDirectory {Exception} -- If the directory does not contain files with the specified image format."""
 	def __init__(self,model,classOneDir,classTwoDir):
 		vrb.print_msg(self.__class__.__name__+' Initializing')
 		vrb.print_msg('--------------------------')
 		self.model = model
 		self.metric = Metrics()
 		imgFormat = input(vrb.set_msg('Select the extension of the images: '))
-		#if not os.path.isdir(classOneDir):
-			#assert False, print_msg(classOneDir+' is not a directory.',show=False,option='error')
-		#if not os.path.isdir(classTwoDir):
-			#assert False, print_msg(classTwoDir+' is not a directory.',show=False,option='error')
+		if not os.path.isdir(classOneDir):
+			raise NotADirectoryError('The directory "'+classOneDir+'" is not a directory.')
+		if not os.path.isdir(classTwoDir):
+			raise NotADirectoryError('The directory "'+classTwoDir+'" is not a directory.')
 		self.classOne = get_image_list(classOneDir,imgFormat,justOne=False)
 		self.classTwo = get_image_list(classTwoDir,imgFormat,justOne=False)
-		if self.classOne and self.classTwo:
-			vrb.print_msg('========== DONE ==========\n')
-		#else:
-			#assert False, print_msg('This directory does not contain files with the ['+imgFormat+'] extension.',show=False,option='error')
-
+		if not self.classOne:
+			raise EmptyDirectoryError('The directory "'+
+				classOneDir+'" does not contain files with the ['+imgFormat+'] extension.')
+		if not self.classTwo:
+			raise EmptyDirectoryError('The directory "'+
+				classTwoDir+'" does not contain files with the ['+imgFormat+'] extension.')
+		vrb.print_msg('========== DONE ==========\n')
+			
 	def interpret(self,metric):
 		"""METHOD::INTERPRET:
 			---
@@ -46,9 +56,14 @@ class DistRobust(Method):
 			>>- 'cosine'
 			>>- 'minkowski'
 			>>- 'jaccard'
+			Raises:
+			---
+			>- OptionNotSupported {Exception} -- If the metric selected is not supported.
 			Returns:
 			---
 			>- {float} -- The average distance between the two classes."""
+		if metric not in availableMetrics:
+			raise OptionNotSupported('The option "'+metric+'" is not supported.')
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
 		oneVect = []; twoVect = []
@@ -71,14 +86,11 @@ class DistRobust(Method):
 			result = self.metric.cosine_distance(meanOne,meanTwo)
 		elif metric == 'jaccard':
 			result = self.metric.jaccard_distance(meanOne,meanTwo)
-		else:
-			raise NotImplementedError
-		self.vectOne = oneVect
-		self.vectTwo = twoVect
-		self.meanOne = meanOne
-		self.meanTwo = meanTwo
 		vrb.print_msg('========== DONE ==========\n')
 		return result
+
+	def __repr__(self):
+		return super().__repr__()+'Distance Robustness>'
 
 
 

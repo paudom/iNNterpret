@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 
+# -- EXTERN IMPORT -- #
+import numpy as np
+import keras.backend as K
+
 # -- IMPORT -- #
 from .. import __verbose__ as vrb
 from ..utils.data import load_image, deprocess_image, visualize_heatmap
 from .gradient import Gradient
-import numpy as np
-import keras.backend as K
 
 # -- SMOOTHGRAD METHOD -- #
 class SmoothGrad(Gradient):
@@ -37,18 +39,16 @@ class SmoothGrad(Gradient):
 			>- {np.array} -- The saliency map."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		self.rawData = load_image(fileName,preprocess=False)
-		imgData = load_image(fileName)
+		self.rawData,imgData = load_image(fileName,preprocess=True)
 		SmoothGrad = []
 		for _ in range(samples):
 			noiseSignal = np.random.normal(0,stdNoise,imgData.shape)
 			img = imgData+noiseSignal
 			gradVal = self.gradient([img])[0]
 			SmoothGrad.append(gradVal)
-		heatMap = np.mean(np.array(SmoothGrad),axis=0)
-		heatMap = np.sum(heatMap[0],axis=-1)
-		heatMap[heatMap < np.mean(heatMap)] = 0
-		self.heatMap = heatMap
+		self.heatMap = np.mean(np.array(SmoothGrad),axis=0)
+		self.heatMap = np.sum(self.heatMap[0],axis=-1)
+		self.heatMap[self.heatMap < np.mean(self.heatMap)] = 0
 		vrb.print_msg('========== DONE ==========\n')
 		return self.heatMap
 		
@@ -67,3 +67,6 @@ class SmoothGrad(Gradient):
 		heatMap = deprocess_image(self.heatMap.copy())
 		visualize_heatmap(self.rawData,heatMap,self.__class__.__name__,cmap,savePath)
 		vrb.print_msg('========== DONE ==========\n')
+		
+	def __repr__(self):
+		return super().__repr__()+'Smooth Gradients>'

@@ -1,7 +1,6 @@
-# -- DATA UTILITIES -- #
 from __future__ import absolute_import
 
-# -- IMPORTS -- #
+# -- EXTERN IMPORTS -- #
 from keras.preprocessing import image as kerasImage
 from PIL import Image as pilImage
 from glob import glob
@@ -13,6 +12,9 @@ import numpy as np
 import random
 import os
 
+# -- IMPORT -- #
+from .exceptions import OptionNotSupported
+
 def norm_img(img, interval=[0,1],dtype='float32'):
 	"""FUNCTION::NORM_IMG: Normalizes image data.
 		---
@@ -23,8 +25,12 @@ def norm_img(img, interval=[0,1],dtype='float32'):
 		>- dtype {string} -- String indicating the type of the result type. (default:{'float32'})
 		Returns:
 		---
-		>- {np.array} -- The image normalized."""
-	#assert len(interval) == 2
+		>- {np.array} -- The image normalized.
+		Raises:
+		---
+		>- ValueError {Exception} -- If the interval does not contain two elements."""
+	if len(interval) != 2:
+		raise ValueError('The interval needs to be a list of two elements.')
 	magnitude = interval[1]-interval[0]
 	return (magnitude*(img-np.min(img)))/(np.ptp(img).astype(dtype)+K.epsilon())
 
@@ -47,7 +53,10 @@ def img_to_vector(img, linear=True):
 		>- linear {bool} -- falg to reshape manually (True) or us reshape. (default: {True}).
 		Returns:
 		---
-		>- {np.array} -- A vector of one dimension representing the image."""
+		>- {np.array} -- A vector of one dimension representing the image.
+		Raises:
+		---
+		>- ValueError {Exception} -- If the shape of the output vector is not correct."""
 	img = np.asarray(img, dtype='float32')
 	H,W,Z = img.shape
 	if linear:
@@ -57,7 +66,8 @@ def img_to_vector(img, linear=True):
 		vector = np.concatenate([R,G,B], axis=0)
 	else:
 		vector = img.reshape(H*W*Z,1)
-	#assert vector.shape[0]==H*W*Z, print_msg('Vector must be of size (%s,%s)' % (str(H*W*Z),str(1)),show=False,option='error')
+	if vector.shape[0] != H*W*Z:
+		raise ValueError('Vector must be of size ('+H*W*Z+',1).')
 	return vector,H,W
 
 def vector_to_img(array, height, width):
@@ -73,22 +83,36 @@ def vector_to_img(array, height, width):
 		>- {np.array} -- A numpy array representing the image reconstructed."""
 	return array.reshape(height,width,3)
 
-def load_image(imgPath, targetSize=(224,224), preprocess=True):
+def load_image(imgPath, targetSize=(224,224), preprocess=False):
 	"""FUNCTION::LOAD_IMAGE: Loads an image given the path and sets the size.
 		---
 		Arguments:
 		---
 		>- imgPath {string} -- Path of the image.
-		>- targetSize {tuple(int,int)} -- Height and Widht of the resulting image.
-		>- preprocess {bool} -- A flag to get a preprocess or get the unmodified image. (default:{True}).
+		>- targetSize {tuple(int,int)} -- Height and Widht of the resulting image. (default:{(224,224)}).
+		>- preprocess {bool} -- A flag to get a preprocess or get the unmodified image. (default:{False}).
 		Returns:
 		---
-		>- {np.array} -- data representing the image."""
-	data = kerasImage.load_img(imgPath, target_size=targetSize)
+		>- If 'preprocess' is desactivated then:
+		>>- {PIL.image} -- original image.
+		>>- {np.array} -- data representing the image.
+		>- If not:
+		>>- {np.array} -- data representing the image.
+		Raises:
+		---
+		>- FileNotFound {Exception} -- If the filename specified is not found."""
+	if not os.path.isfile(imgPath):
+		raise FileNotFoundError('The file "'+imgPath+'" is not found.')
+	img = kerasImage.load_img(imgPath, target_size=targetSize)
+	data = process_image(img)
 	if preprocess:
-		data = kerasImage.img_to_array(data)
-		data = np.expand_dims(data, axis=0)
+		return img,data
 	return data
+
+def process_image(imgData):
+	"""FUNCTION::PROCESS_IMAGE: Process an image to prepare it for the model."""
+	data = kerasImage.img_to_array(imgData)
+	return np.expand_dims(data,axis=0)
 
 def get_image_list(dirPath,imgFormat,justOne=True):
 	"""FUNCTION::GET_IMAGE_LIST: Get a list with all image filename/s of a certain directory.
@@ -121,13 +145,16 @@ def reduce_channels(imgData,axis=-1,option='sum'):
 		>>- 'mean'
 		Returns:
 		---
-		>- {np.array} -- image data with just one channel."""
+		>- {np.array} -- image data with just one channel.
+		Raises:
+		---
+		>- OptionNotSupported {Exception} -- If the option introduced is not supported."""
 	if option == 'sum':
 		return imgData.sum(axis=axis)
 	elif option == 'mean':
 		return imgData.mean(axis=axis)
 	else:
-		raise NotImplementedError
+		raise OptionNotSupported('The option "'+option+'" is not supported.')
 
 def deprocess_image(img,scale=0.1,dtype='uint8'):
 	"""FUNCTION::DEPROCESS_IMAGE: Converts an image into a valid image.

@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 
+# -- IMPORT -- #
+from .exceptions import InterfaceException
+
 # -- INTERFACES -- #
 class Rule(object):
 	"""INTERFACE::Rule:
@@ -11,9 +14,12 @@ class Rule(object):
 		---
 		>- METHOD::RUN"""
 	def __new__(cls,*args,**kwargs):
-		#if not hasattr(cls,'run'):
-			#raise NotImplementedError
+		if not hasattr(cls,'run'):
+			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "run".')
 		return super(Rule,cls).__new__(cls)
+
+	def __repr__(self):
+		return '<class::Layer-Wise Relevance Propagation(LRP):Rule:'
 
 class DeconvLayer(object):
 	"""INTERFACE::DeconvLayer:
@@ -26,11 +32,14 @@ class DeconvLayer(object):
 		>- METHOD::UP.
 		>- METHOD::DOWN."""
 	def __new__(cls,*args,**kwargs):
-		#if not hasattr(cls,'up'):
-			#raise NotImplementedError
-		#if not hasattr(cls,'down'):
-		   #raise NotImplementedError
+		if not hasattr(cls,'up'):
+			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "up".')
+		if not hasattr(cls,'down'):
+			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "down".')
 		return super(DeconvLayer,cls).__new__(cls)
+	
+	def __repr__(self):
+		return '<class::Deconvolution Layer:'
 
 class Method(object):
 	"""INTERFACE::Method:
@@ -42,6 +51,9 @@ class Method(object):
 		---
 		>- METHOD::INTERPRET."""
 	def __new__(cls,*args,**kwargs):
-		#if not hasattr(cls,'interpret'):
-			#raise NotImplementedError
+		if not hasattr(cls,'interpret'):
+			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "interpret".')
 		return super(Method,cls).__new__(cls)
+	
+	def __repr__(self):
+		return '<class::Interpretability Method:'
