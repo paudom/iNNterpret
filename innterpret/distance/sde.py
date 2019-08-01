@@ -77,13 +77,13 @@ class SDEModel(Method):
 			if metric == 'euclidean':
 				distVector[imgPath] = self.metric.euclidean_distance(pred,imgFile)
 			elif metric == 'manhattan':
-				distVector.[imgPath] = self.metric.manhattan_distance(pred,imgFile))
+				distVector[imgPath] = self.metric.manhattan_distance(pred,imgFile)
 			elif metric == 'minkowski':
-				distVector.[imgPath] = self.metric.minkowski_distance(pred,imgFile,pVal)
+				distVector[imgPath] = self.metric.minkowski_distance(pred,imgFile,pVal)
 			elif metric == 'cosine':
-				distVector.[imgPath] = self.metric.cosine_distance(pred,imgFile))
+				distVector[imgPath] = self.metric.cosine_distance(pred,imgFile)
 			elif metric == 'jaccard':
-				distVector.[imgPath] = self.metric.jaccard_distance(pred,imgFile))
+				distVector[imgPath] = self.metric.jaccard_distance(pred,imgFile)
 		candidates = []
 		for k in range(numK):
 			candidates.append(min(distVector,key=distVector.get))

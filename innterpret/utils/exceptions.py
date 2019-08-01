@@ -5,57 +5,53 @@ import traceback
 import sys
 
 # -- MODULE EXCEPTIONS -- #
-class OptionNotSupported(Exception):
+class InnterpretException(Exception):
+    """EXCEPTION::InnterpretException:
+        ---
+        Description:
+        ---
+        >- Base class for all the exceptions exclusive for this module."""
+    @staticmethod
+    def myexcepthook(dtype,value,tb):
+        print(''.join(traceback.format_exception(dtype,value,tb)))
+    sys.excepthook = myexcepthook.__func__
+
+class OptionNotSupported(InnterpretException):
     """EXCEPTION::OptionNotSupported.
         ---
         Cause:
         ---
         >- When the option selected is not supported."""
-    def myexcepthook(dtype, value, tb):
-        msg = ''.join(traceback.format_exception(dtype, value, tb))
-        print(msg)
-    sys.excepthook = myexcepthook
+    pass
 
-class EmptyDirectoryError(Exception):
+class EmptyDirectoryError(InnterpretException):
     """EXCEPTION::EmptyDirectoryError.
         ---
         Cause:
         ---
         >- When directory does not contain any relevant files."""
-    def myexcepthook(dtype, value, tb):
-        msg = ''.join(traceback.format_exception(dtype, value, tb))
-        print(msg)
-    sys.excepthook = myexcepthook
+    pass
 
-class TensorNotValidException(Exception):
+class TensorNotValidException(InnterpretException):
     """EXCEPTION::TensorNotValidException:
         ---
         Cause:
         ---
         >- When the specified layer is not a convolution layer."""
-    def myexcepthook(dtype,value,tb):
-        msg = ''.join(traceback.format_exception(dtype,value,tb))
-        print(msg)
-    sys.excepthook = myexcepthook
+    pass
 
-class InterfaceException(Exception):
+class InterfaceException(InnterpretException):
     """EXCEPTION::InterfaceException:
         ---
         Causes:
         ---
         >- If the interface is not well implemented."""
-    def myexcepthook(dtype,value,tb):
-        msg = ''.join(traceback.format_exception(dtype,value,tb))
-        print(msg)
-    sys.excepthook = myexcepthook
+    pass
 
-class H5FileCorruptedError(Exception):
+class H5FileCorruptedError(InnterpretException):
     """EXCEPTION::H5FileCorruptedError:
         ---
         Cause:
         ---
         >- If the h5 file containing model information is not correct."""
-    def myexcepthook(dtype,value,tb):
-        msg = ''.join(traceback.format_exception(dtype,value,tb))
-        print(msg)
-    sys.excepthook = myexcepthook
+    pass

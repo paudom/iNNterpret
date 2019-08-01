@@ -73,7 +73,8 @@ class Deconvolution(Method):
 			>- OptionNotSupported {Exception} -- If 'visMode' option chosed is not supported."""
 		vrb.print_msg(self.__class__.__name__+' Analyzing')
 		vrb.print_msg('--------------------------')
-		if not 0 <= featVis <= self.numFilters
+		if not 0 <= featVis <= self.numFilters:
+			raise ValueError('The feature map is invalid. Needs to be between [0,'+self.numFilters+'].')
 		self.rawData, imgInput = load_image(fileName,preprocess=True)
 		vrb.print_msg('Forward Pass')
 		vrb.print_msg('--------------------------')

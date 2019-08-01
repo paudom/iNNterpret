@@ -1,17 +1,19 @@
 from __future__ import absolute_import
 
-# -- IMPORTS -- #
+# -- EXTERN IMPORTS -- #
 from keras.preprocessing import image as kerasImage
 from PIL import Image as pilImage
 from glob import glob
 import keras.backend as K
-from utils.exceptions import OptionNotSupported
 import matplotlib
 matplotlib.use('tkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import random
 import os
+
+# -- IMPORT -- #
+from .exceptions import OptionNotSupported
 
 def norm_img(img, interval=[0,1],dtype='float32'):
 	"""FUNCTION::NORM_IMG: Normalizes image data.
