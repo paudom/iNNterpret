@@ -94,3 +94,6 @@ class GuidedBackProp(Method):
 		result = deprocess_image(self.saliency.copy())
 		visualize_heatmap(self.rawData,result,self.__class__.__name__,'viridis',savePath)
 		vrb.print_msg('========== DONE ==========\n')
+
+	def __repr__(self):
+		return super().__repr__()+'Guided Back Propagation>'

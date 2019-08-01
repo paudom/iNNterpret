@@ -164,6 +164,9 @@ class ActMaximization(Method):
 		imgDraw.save(savePath,dpi=(250,250))
 		vrb.print_msg('========== DONE ==========\n')
 
+	def __repr__(self):
+		return super().__repr__()+'Class Activation Maximization>'
+
 
 
 

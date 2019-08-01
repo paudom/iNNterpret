@@ -15,6 +15,9 @@ class InnterpretException(Exception):
     def myexcepthook(dtype,value,tb):
         print(''.join(traceback.format_exception(dtype,value,tb)))
     sys.excepthook = myexcepthook.__func__
+    
+    def __repr__(self):
+        return '<class::Exception:'+self.__class__.__name__+'>.'
 
 class OptionNotSupported(InnterpretException):
     """EXCEPTION::OptionNotSupported.

@@ -18,6 +18,9 @@ class Rule(object):
 			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "run".')
 		return super(Rule,cls).__new__(cls)
 
+	def __repr__(self):
+		return '<class::Layer-Wise Relevance Propagation(LRP):Rule:'
+
 class DeconvLayer(object):
 	"""INTERFACE::DeconvLayer:
 		---
@@ -34,6 +37,9 @@ class DeconvLayer(object):
 		if not hasattr(cls,'down'):
 			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "down".')
 		return super(DeconvLayer,cls).__new__(cls)
+	
+	def __repr__(self):
+		return '<class::Deconvolution Layer:'
 
 class Method(object):
 	"""INTERFACE::Method:
@@ -48,3 +54,6 @@ class Method(object):
 		if not hasattr(cls,'interpret'):
 			raise InterfaceException(cls.__class__.__name__+' needs to implement the method "interpret".')
 		return super(Method,cls).__new__(cls)
+	
+	def __repr__(self):
+		return '<class::Interpretability Method:'

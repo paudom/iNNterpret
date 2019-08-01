@@ -89,6 +89,9 @@ class DistRobust(Method):
 		vrb.print_msg('========== DONE ==========\n')
 		return result
 
+	def __repr__(self):
+		return super().__repr__()+'Distance Robustness>'
+
 
 
 

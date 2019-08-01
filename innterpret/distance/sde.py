@@ -89,3 +89,6 @@ class SDEModel(Method):
 			candidates.append(min(distVector,key=distVector.get))
 		vrb.print_msg('========== DONE ==========\n')
 		return candidates
+
+	def __repr__(self):
+		return super().__repr__()+'Similar Distance Examples>'

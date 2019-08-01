@@ -139,6 +139,9 @@ class ZPlus(Rule):
 										  S,strdSize,self.layer.padding.upper())
 		return K.clip(self.act*C,self.minValue,self.maxValue)
 
+	def __repr__(self):
+		return super().__repr__()+self.__class__.__name__+':Layer:'+self.name+'>'
+
 class ZAlpha(Rule):
 	"""CLASS::ZAlpha:
 		---
@@ -276,3 +279,6 @@ class ZAlpha(Rule):
 										  Sb,strdSize,self.layer.padding.upper())
 		Rn = self.act*(self.alpha*Ca+self.beta*Cb)
 		return K.clip(Rn,self.minValue,self.maxValue)
+	
+	def __repr__(self):
+		return super().__repr__()+self.__class__.__name__+':Layer:'+self.name+'>'

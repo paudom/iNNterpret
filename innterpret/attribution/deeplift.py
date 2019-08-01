@@ -25,3 +25,6 @@ class DeepLIFT(Method):
 			Returns:
 			---"""
 		pass
+	
+	def __repr__(self):
+		return super().__repr__()+self.__class__.__name__+'>'

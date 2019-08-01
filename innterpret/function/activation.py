@@ -85,3 +85,6 @@ class ActivationVis(Method):
 			fileName = self.saveDir+os.sep+self.layerNames[layer]+'_'+str(featureMap)+'.png'
 			fig.savefig(fileName,dpi=250)
 		vrb.print_msg('========== DONE ==========\n')
+		
+	def __repr__(self):
+		return super().__repr__()+'Activation Visualization>'

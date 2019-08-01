@@ -104,3 +104,6 @@ class IntegratedGrad(Gradient):
 		IntGradImg = kerasImage.array_to_img(IntGradImg[0])
 		visualize_heatmap(self.rawData,IntGradImg,self.__class__.__name__,'bone',savePath)
 		vrb.print_msg('========== DONE ==========\n')
+		
+	def __repr__(self):
+		return super().__repr__()+'Integrated Gradients>'

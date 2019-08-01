@@ -23,3 +23,6 @@ class LIMEModel(Method):
 			Raises:
 			>- NotImplementedError."""
 		raise NotImplementedError
+	
+	def __repr__(self):
+		return super().__repr__()+'Local Interpretable Model Explanations (LIME)>'

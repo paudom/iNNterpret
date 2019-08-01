@@ -176,3 +176,6 @@ class FeatMaximization(Method):
 		imgDraw = kerasImage.array_to_img(draw,scale=False)
 		imgDraw.save(savePath,dpi=(250,250))
 		vrb.print_msg('========== DONE ==========\n')
+	
+	def __repr__(self):
+		return super().__repr__()+'Feature Map Maximization>'

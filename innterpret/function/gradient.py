@@ -69,3 +69,6 @@ class Gradient(Method):
 		heatMap = deprocess_image(self.heatMap.copy())
 		visualize_heatmap(self.rawData,heatMap,self.__class__.__name__,cmap,savePath)
 		vrb.print_msg('========== DONE ==========\n')
+
+	def __repr__(self):
+		return super().__repr__()+self.__class__.__name__+'>'

@@ -157,3 +157,6 @@ class LRPModel(Method):
 			self.relevance = sess.run(self.R[layerName])
 		vrb.print_msg('========== DONE ==========\n')
 		return self.relevance
+
+	def __repr__(self):
+		return super().__repr__()+'Layer-Wise Relevance Propagation (LRP)>'

@@ -108,3 +108,6 @@ class GradCAM(Method):
 		plt.imshow(self.cam,cmap=cmap,interpolation='bilinear',alpha=0.5)
 		fig.savefig(savePath,dpi=250)
 		vrb.print_msg('========== DONE ==========\n')
+
+	def __repr__(self):
+		return super().__repr__()+'GradCAM (Class Activation Map)>'
