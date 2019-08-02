@@ -89,12 +89,12 @@ class LRPModel(Method):
 		R = {}
 		R[self.rules[0].name] = K.identity(self.outputR[-1])
 		self.__print_rule_information(R[self.rules[0].name])
-		for k in range(len(self.rules)):
+		for k,rule in enumerate(self.rules):
 			if k != len(self.rules)-1:
-				R[self.rules[k+1].name] = self.rules[k].run(R[self.rules[k].name],ignoreBias=False)
+				R[self.rules[k+1].name] = rule(R[rule.name],ignoreBias=False)
 				self.__print_rule_information(R[self.rules[k+1].name])
 			else:
-				R['input'] = self.rules[k].run(R[self.rules[k].name],ignoreBias=False)
+				R['input'] = rule(R[rule.name],ignoreBias=False)
 				self.__print_rule_information(R['input'])
 		vrb.print_msg('========== DONE ==========\n')
 		self.R = R

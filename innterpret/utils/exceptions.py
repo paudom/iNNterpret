@@ -51,10 +51,10 @@ class InterfaceException(InnterpretException):
         >- If the interface is not well implemented."""
     pass
 
-class H5FileCorruptedError(InnterpretException):
-    """EXCEPTION::H5FileCorruptedError:
+class FileCorruptedError(InnterpretException):
+    """EXCEPTION::FileCorruptedError:
         ---
         Cause:
         ---
-        >- If the h5 file containing model information is not correct."""
+        >- If a the loaded File is Corrupted."""
     pass

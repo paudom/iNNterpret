@@ -32,7 +32,7 @@ print('========== DONE ==========')
 __verbose__.reset_colour
 
 # -- VERSION -- #
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 
 # -- AUTHOR -- #
 __author__ = 'Pau Domingo'

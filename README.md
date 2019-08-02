@@ -3,6 +3,7 @@ iNNtrepret is an Interpretability Toolbox for Deep Learning Models. A project de
 
 ## Introduction
 This was the product of a Degree Thesis submitted to the faculty of Escola Tècnica Superior d’Enginyeria de Telecomunicació de Barcelona Universitat Politècnica de Catalunya, with the title: "Interpretability of Deep Learning Models".  
+
 Most of the times we evaluate models with the precision we get from a test database. But there are techniques that can allow us to comprehend better the decisions of our models. For the moment this Toolbox only works with VGG16 and is still in development.
 
 ## Version

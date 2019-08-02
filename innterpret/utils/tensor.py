@@ -9,7 +9,7 @@ import h5py
 import os
 
 # -- IMPORT -- #
-from .exceptions import H5FileCorruptedError, TensorNotValidException
+from .exceptions import FileCorruptedError, TensorNotValidException
 
 def load_vgg16(trained=True):
 	"""FUNCTION::LOAD_VGG16: Load pretrained VGG16 model from keras.
@@ -51,13 +51,13 @@ def load_model(h5file):
 		Raises: 
 		---
 		>- FileNotFoundError {Exception} -- If the file specified does not exists.
-		>- H5FileCorruptedError {Exception} -- If the h5file is corrupted and can not be readed."""
+		>- FileCorruptedError {Exception} -- If the h5file is corrupted and can not be readed."""
 	if not os.path.isfile(h5file):
 		raise FileNotFoundError('The file "'+h5file+'" was not found')
 	try:
 		model = keras.models.load_model(h5file)
 	except Exception:
-		raise H5FileCorruptedError('Error trying to read "'+h5file+'". Try to execute \
+		raise FileCorruptedError('Error trying to read h5 file "'+h5file+'". Try to execute \
 									"innterpret.utils.tensor.fix_layer0()" if your model \
 									has an "InputLayer". Then try again to load the model.')
 	else:

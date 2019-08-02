@@ -33,8 +33,8 @@ class ZPlus(Rule):
 		self.maxValue = K.epsilon()
 		self.minValue = -K.epsilon()
 		
-	def run(self,R,ignoreBias=False):
-		"""METHOD::RUN:
+	def __call__(self,R,ignoreBias=False):
+		"""CALLABLE::
 			---
 			Arguments:
 			---
@@ -163,8 +163,8 @@ class ZAlpha(Rule):
 		self.maxValue = K.epsilon()
 		self.minValue = -K.epsilon()
 		
-	def run(self,R,ignoreBias=False):
-		"""METHOD::RUN:
+	def __call__(self,R,ignoreBias=False):
+		"""CALLABLE::
 			---
 			Arguments:
 			---

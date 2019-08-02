@@ -13,7 +13,7 @@ import random
 import os
 
 # -- IMPORT -- #
-from .exceptions import OptionNotSupported
+from .exceptions import OptionNotSupported, FileCorruptedError
 
 def norm_img(img, interval=[0,1],dtype='float32'):
 	"""FUNCTION::NORM_IMG: Normalizes image data.
@@ -100,14 +100,21 @@ def load_image(imgPath, targetSize=(224,224), preprocess=False):
 		>>- {np.array} -- data representing the image.
 		Raises:
 		---
-		>- FileNotFound {Exception} -- If the filename specified is not found."""
+		>- FileNotFoundError {Exception} -- If the filename specified is not found.
+		>- FileCorruptedError {Exception} -- If the file is corrupted and can not be opened."""
 	if not os.path.isfile(imgPath):
 		raise FileNotFoundError('The file "'+imgPath+'" is not found.')
-	img = kerasImage.load_img(imgPath, target_size=targetSize)
-	data = process_image(img)
-	if preprocess:
-		return img,data
-	return data
+	try:
+		img = kerasImage.load_img(imgPath, target_size=targetSize)
+	except IOError:
+		raise FileCorruptedError('The file "'+imgPath+'" is corrupted.')
+	else:
+		if img is None:
+			raise FileCorruptedError('The file "'+imgPath+'" is corrupted.')
+		data = process_image(img)
+		if preprocess:
+			return img,data
+		return data
 
 def process_image(imgData):
 	"""FUNCTION::PROCESS_IMAGE: Process an image to prepare it for the model."""
